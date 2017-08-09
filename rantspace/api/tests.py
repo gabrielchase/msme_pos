@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db import IntegrityError
 
 from api.models import (
     UserProfile,
@@ -75,5 +76,32 @@ class ModelTestCase(TestCase):
 
             self.assertTrue('Users must provide an email address' in context.exception)
 
+    def test_model_create_superuser(self):
+        superuser_email = 'superuser@test.com'
 
+        superuser = UserProfile.objects.create_superuser(
+            email=superuser_email,
+            surname=self.user_attributes.get('surname'),
+            given_name=self.user_attributes.get('given_name'),
+            password=self.user_attributes.get('password')
+        )
 
+        self.assertEqual(bool(superuser.id), True)
+        self.assertEqual(superuser.email, superuser_email)
+        self.assertNotEqual(superuser.password, self.user_attributes.get('password'))
+        self.assertEqual(superuser.surname, self.user_attributes.get('surname'))
+        self.assertEqual(superuser.given_name, self.user_attributes.get('given_name'))
+        self.assertEqual(superuser.is_active, True)
+        self.assertEqual(superuser.is_staff, True)
+        self.assertEqual(superuser.is_superuser, True)
+
+    def test_model_raise_duplicate_user_error(self):
+        with self.assertRaises(IntegrityError) as context:
+            UserProfile.objects.create_user(
+                email=self.user_attributes.get('email'),
+                surname=self.user_attributes.get('surname'),
+                given_name=self.user_attributes.get('given_name'),
+                password=self.user_attributes.get('password')
+            )
+
+            self.assertTrue('duplicate key value violates unique constraint' in context.exception)
