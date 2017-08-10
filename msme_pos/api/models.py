@@ -60,8 +60,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     business_name = models.CharField(max_length=255)
     identifier = models.CharField(max_length=255)
 
-    given_name = models.CharField(max_length=255)
     surname = models.CharField(max_length=255)
+    given_name = models.CharField(max_length=255)
     
     address = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
@@ -78,11 +78,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def get_full_name(self):
         """ Used to get a user's business name """
 
+        # return self.business_name + '-' + self.identifier
         return '{}-{}'.format(self.business_name, self.identifier)
 
     def get_short_name(self):
         """ Used to get a user's name """
-
+        
+        # return self.surname + ', ' + self.given_name
         return '{}, {}'.format(self.surname, self.given_name)
 
     def get_email(self):
@@ -94,5 +96,3 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """ Business name: email """ 
 
         return self.get_full_name() + ': ' + self.get_short_name()
-
-        # return '{}: {}'.format(self.business_name, self.get_email)
