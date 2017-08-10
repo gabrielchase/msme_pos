@@ -10,14 +10,23 @@ from django.contrib.auth.models import (
 class UserProfileManager(BaseUserManager):
     """ Helps Django work with out custom user """
 
-    def create_user(self, email, surname, given_name, password=None):
+    def create_user(self, email, business_name, identifier, surname, given_name, password, address=None, city=None, state=None):
         """ Create a new user profile object """
         
         if not email: 
             raise ValueError('Users must provide an email address')
 
         email = self.normalize_email(email)
-        user = self.model(email=email, surname=surname, given_name=given_name)
+        user = self.model(
+            email=email, 
+            business_name=business_name,
+            identifier=identifier,
+            surname=surname, 
+            given_name=given_name, 
+            address=address,
+            city=city,
+            state=state
+        )
 
         # `set_password` hashes the given password
         user.set_password(password)
@@ -26,10 +35,13 @@ class UserProfileManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email, surname, given_name, password):
+    def create_superuser(self, email, surname, given_name, password, business_name=None, identifier=None):
         """ Creates and saves a superuser """
 
-        user = self.create_user(email, surname, given_name, password)
+        business_name = 'app'
+        identifier = 'admin'
+
+        user = self.create_user(email, business_name, identifier, surname, given_name, password)
 
         user.is_superuser = True
         user.is_staff = True
@@ -44,26 +56,43 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """ Represent a user profile in the application. """
 
     email = models.EmailField(max_length=255, unique=True)
+    
+    business_name = models.CharField(max_length=255)
+    identifier = models.CharField(max_length=255)
+
     given_name = models.CharField(max_length=255)
     surname = models.CharField(max_length=255)
+    
+    address = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UserProfileManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['given_name', 'surname']
+    REQUIRED_FIELDS = ['business_name', 'identifier', 'surname', 'given_name']
 
     def get_full_name(self):
-        """ Used to get a user's full name """
+        """ Used to get a user's business name """
 
-        return self.given_name + self.surname
+        return '{}-{}'.format(self.business_name, self.identifier)
 
     def get_short_name(self):
-        """ Used to get a user's surname """
+        """ Used to get a user's name """
 
-        return self.surname
+        return '{}, {}'.format(self.surname, self.given_name)
 
-    def __str__(self):
+    def get_email(self):
+        """ Used to get a user's email """
+        
         return self.email
 
+    def __str__(self):
+        """ Business name: email """ 
+
+        return self.get_full_name() + ': ' + self.get_short_name()
+
+        # return '{}: {}'.format(self.business_name, self.get_email)
