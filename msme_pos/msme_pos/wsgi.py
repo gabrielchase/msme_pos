@@ -1,5 +1,5 @@
 """
-WSGI config for rantspace project.
+WSGI config for msme_pos project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rantspace.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msme_pos.settings")
 
 application = get_wsgi_application()
