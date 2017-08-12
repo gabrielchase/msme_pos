@@ -18,8 +18,8 @@ class ModelTestCase(TestCase):
             'email': 'business@email.com', 
             'business_name': 'business',
             'identifier': 'street',
-            'surname': 'test',
-            'given_name': 'test',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
             'password': 'password',
             'address': '1 street',
             'city': 'city',
@@ -30,8 +30,8 @@ class ModelTestCase(TestCase):
             email=self.user_attributes.get('email'),
             business_name=self.user_attributes.get('business_name'),
             identifier=self.user_attributes.get('identifier'),
-            surname=self.user_attributes.get('surname'),
-            given_name=self.user_attributes.get('given_name'),
+            owner_surname=self.user_attributes.get('owner_surname'),
+            owner_given_name=self.user_attributes.get('owner_given_name'),
             password=self.user_attributes.get('password'),
             address=self.user_attributes.get('address'),
             city=self.user_attributes.get('city'),
@@ -48,8 +48,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(new_user.business_name, self.user_attributes.get('business_name'))
         self.assertEqual(new_user.identifier, self.user_attributes.get('identifier'))
         self.assertNotEqual(new_user.password, self.user_attributes.get('password'))
-        self.assertEqual(new_user.surname, self.user_attributes.get('surname'))
-        self.assertEqual(new_user.given_name, self.user_attributes.get('given_name'))
+        self.assertEqual(new_user.owner_surname, self.user_attributes.get('owner_surname'))
+        self.assertEqual(new_user.owner_given_name, self.user_attributes.get('owner_given_name'))
         self.assertEqual(new_user.address, self.user_attributes.get('address'))
         self.assertEqual(new_user.city, self.user_attributes.get('city'))
         self.assertEqual(new_user.state, self.user_attributes.get('state'))
@@ -62,8 +62,8 @@ class ModelTestCase(TestCase):
             'email': 'test@TeSt2.cOm', 
             'business_name': 'business',
             'identifier': 'identifier',
-            'surname': 'test',
-            'given_name': 'test',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
             'password': 'password'
         }
 
@@ -71,8 +71,8 @@ class ModelTestCase(TestCase):
             email=normalize_email_attributes.get('email'),
             business_name=normalize_email_attributes.get('business_name'),
             identifier=normalize_email_attributes.get('identifier'),
-            surname=normalize_email_attributes.get('surname'),
-            given_name=normalize_email_attributes.get('given_name'),
+            owner_surname=normalize_email_attributes.get('owner_surname'),
+            owner_given_name=normalize_email_attributes.get('owner_given_name'),
             password=normalize_email_attributes.get('password')
         )
 
@@ -82,8 +82,8 @@ class ModelTestCase(TestCase):
         no_email_attributes = {
             'business_name': 'business',
             'identifier': 'identifier',
-            'surname': 'test',
-            'given_name': 'test',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
             'password': 'password'
         }
 
@@ -92,8 +92,8 @@ class ModelTestCase(TestCase):
                 email=None,
                 business_name=no_email_attributes.get('business_name'),
                 identifier=no_email_attributes.get('identifier'),
-                surname=no_email_attributes.get('surname'),
-                given_name=no_email_attributes.get('given_name'),
+                owner_surname=no_email_attributes.get('owner_surname'),
+                owner_given_name=no_email_attributes.get('owner_given_name'),
                 password=no_email_attributes.get('password')
             )
 
@@ -104,8 +104,8 @@ class ModelTestCase(TestCase):
 
         superuser = UserProfile.objects.create_superuser(
             email=superuser_email,
-            surname=self.user_attributes.get('surname'),
-            given_name=self.user_attributes.get('given_name'),
+            owner_surname=self.user_attributes.get('owner_surname'),
+            owner_given_name=self.user_attributes.get('owner_given_name'),
             password=self.user_attributes.get('password')
         )
 
@@ -114,8 +114,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(superuser.business_name, 'app')
         self.assertEqual(superuser.identifier, 'admin')
         self.assertNotEqual(superuser.password, self.user_attributes.get('password'))
-        self.assertEqual(superuser.surname, self.user_attributes.get('surname'))
-        self.assertEqual(superuser.given_name, self.user_attributes.get('given_name'))
+        self.assertEqual(superuser.owner_surname, self.user_attributes.get('owner_surname'))
+        self.assertEqual(superuser.owner_given_name, self.user_attributes.get('owner_given_name'))
         self.assertEqual(superuser.is_active, True)
         self.assertEqual(superuser.is_staff, True)
         self.assertEqual(superuser.is_superuser, True)
@@ -126,16 +126,33 @@ class ModelTestCase(TestCase):
                 email=self.user_attributes.get('email'),
                 business_name=self.user_attributes.get('business_name'),
                 identifier=self.user_attributes.get('identifier'),
-                surname=self.user_attributes.get('surname'),
-                given_name=self.user_attributes.get('given_name'),
+                owner_surname=self.user_attributes.get('owner_surname'),
+                owner_given_name=self.user_attributes.get('owner_given_name'),
                 password=self.user_attributes.get('password')
             )
 
             self.assertTrue('duplicate key value violates unique constraint' in context.exception)
 
+    def test_model_saves_address_city_state_as_null(self):
+        user = UserProfile.objects.create_user(
+            email='nullvalues@email.com',   
+            business_name=self.user_attributes.get('business_name'),
+            identifier=self.user_attributes.get('identifier'),
+            owner_surname=self.user_attributes.get('owner_surname'),
+            owner_given_name=self.user_attributes.get('owner_given_name'),
+            password=self.user_attributes.get('password')
+        )
+
+        new_count = UserProfile.objects.count()
+
+        self.assertNotEqual(self.old_count, new_count)
+        self.assertEqual(user.address, None)
+        self.assertEqual(user.city, None)
+        self.assertEqual(user.state, None)
+
     def test_model_get_short_name(self):
         new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(new_user.get_short_name(), new_user.surname + ', ' + new_user.given_name)
+        self.assertEqual(new_user.get_short_name(), new_user.owner_surname + ', ' + new_user.owner_given_name)
         
     def test_model_get_full_name(self):
         new_user = UserProfile.objects.get(email='business@email.com')
@@ -148,3 +165,6 @@ class ModelTestCase(TestCase):
     def test_model_str(self):
         new_user = UserProfile.objects.get(email='business@email.com')
         self.assertEqual(str(new_user), new_user.get_full_name() + ': ' + new_user.get_short_name())
+
+
+# class ViewTestCase(TestCase):
