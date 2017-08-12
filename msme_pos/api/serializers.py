@@ -36,3 +36,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+    def update(self, full_business_name, validated_data):
+        user = UserProfile.objects.get(full_business_name=full_business_name)
+
+        for k, v in validated_data.items():
+            setattr(user, k, v)
+        
+        user.full_business_name = user.get_full_name()
+        user.save()
+
+        return user
