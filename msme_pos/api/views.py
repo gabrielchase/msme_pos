@@ -2,11 +2,13 @@ from django.shortcuts import render
 
 from rest_framework import viewsets
 from rest_framework import filters
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from api.models import UserProfile
 from api.serializers import UserProfileSerializer
+from api.permissions import UpdateOwnProfile
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -21,6 +23,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         'owner_surname', 'owner_given_name',
         'address', 'city', 'state'
     )
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (UpdateOwnProfile,)
     
 
 class LoginViewSet(viewsets.ViewSet):
