@@ -58,7 +58,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     
     business_name = models.CharField(max_length=255)
-    identifier = models.CharField(max_length=255)
+    identifier = models.CharField(max_length=255, null=True)
 
     owner_surname = models.CharField(max_length=255)
     owner_given_name = models.CharField(max_length=255)
