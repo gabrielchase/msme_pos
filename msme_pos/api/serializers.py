@@ -10,7 +10,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = (
             'id', 'email', 'business_name', 'identifier', 
-            'surname', 'given_name', 'address', 'city', 'state'
+            'surname', 'given_name', 'password',
+            'address', 'city', 'state'
         )
         extra_kwargs = {'password': { 'write_only': True }}
 
@@ -20,7 +21,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user = UserProfile(
             email=validated_data.get('email'),
             business_name=validated_data.get('business_name'),
-            identifier=validated_data.get('identifer'),
+            identifier=validated_data.get('identifier'),
             surname=validated_data.get('surname'),
             given_name=validated_data.get('given_name'),
             address=validated_data.get('address'),
