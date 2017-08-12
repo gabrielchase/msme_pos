@@ -278,7 +278,7 @@ class ViewTestCase(TestCase):
         self.assertFalse(self.api_response.json().get('is_superuser'))
         self.assertFalse(self.api_response.json().get('is_staff'))
 
-    def test_api_can_edit_user(self):
+    def test_api_can_update_user(self):
         user_to_be_updated = UserProfile.objects.get()
 
         new_user_data = {

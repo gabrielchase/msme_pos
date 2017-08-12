@@ -41,7 +41,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user = UserProfile.objects.get(full_business_name=full_business_name)
 
         for k, v in validated_data.items():
-            setattr(user, k, v)
+            if k != 'password':
+                setattr(user, k, v)
+            else:
+                user.set_password(validated_data.get('password'))
         
         user.full_business_name = user.get_full_name()
         user.save()
