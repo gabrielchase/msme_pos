@@ -9,7 +9,7 @@ from api.views import (
 
 router = DefaultRouter()
 
-router.register('profile', UserProfileViewSet)
+router.register('profile', UserProfileViewSet, 'profile')
 
 # Set base_name if its not a ModelViewSet
 router.register('login', LoginViewSet, base_name='login') 

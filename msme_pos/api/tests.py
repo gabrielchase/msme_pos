@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.db import IntegrityError
 from django.urls import reverse
 
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from api.models import (
@@ -55,7 +56,7 @@ class ModelTestCase(TestCase):
 
     def test_model_str(self):
         new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(str(new_user), new_user.get_full_name() + ': ' + new_user.get_short_name())
+        self.assertEqual(str(new_user), new_user.get_full_name())
 
     def test_model_saves_user(self):
         new_count = UserProfile.objects.count()
@@ -216,9 +217,12 @@ class LoginViewTestCase(TestCase):
         self.assertNotEqual(response.json().get('token'), None)
 
 
-class ViewTestCase(self):
+class ViewTestCase(TestCase):
     def setUp(self):
-        self.user_attributes = {
+        self.client = APIClient()
+        self.old_count = UserProfile.objects.count()
+
+        self.user_data = {
             'email': 'business@email.com', 
             'business_name': 'business',
             'identifier': 'street',
@@ -229,17 +233,99 @@ class ViewTestCase(self):
             'city': 'city',
             'state': 'state',
         }
-        
-        UserProfile.objects.create_user(
-            email=self.user_attributes.get('email'),
-            business_name=self.user_attributes.get('business_name'),
-            identifier=self.user_attributes.get('identifier'),
-            owner_surname=self.user_attributes.get('owner_surname'),
-            owner_given_name=self.user_attributes.get('owner_given_name'),
-            password=self.user_attributes.get('password'),
-            address=self.user_attributes.get('address'),
-            city=self.user_attributes.get('city'),
-            state=self.user_attributes.get('state'),
+
+        self.api_response = self.client.post(
+            reverse('api:profile-list'),
+            self.user_data,
+            format='json'
         )
 
-        self.client = APIClient()
+    def test_api_can_create_user(self):
+        new_count = UserProfile.objects.count()
+
+        self.assertNotEqual(self.old_count, new_count)
+        self.assertEqual(self.api_response.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(self.api_response.json().get('is_superuser'))
+        self.assertFalse(self.api_response.json().get('is_staff'))
+
+    def test_api_can_get_user_list(self):
+        self.api_response = self.client.get(
+            reverse('api:profile-list'),
+            format='json'
+        )
+
+        self.assertTrue(self.api_response.json())
+
+        for user in self.api_response.json():
+            self.assertTrue(user.get('id'))
+
+    def test_api_can_get_user(self):
+        user = UserProfile.objects.get()
+
+        self.api_response = self.client.get(
+            reverse('api:profile-detail', kwargs={'full_business_name': user.full_business_name}),
+            format='json'
+        )
+
+        self.assertEqual(self.api_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(user.id)
+        self.assertEqual(self.api_response.json().get('email'), user.email)
+        self.assertEqual(self.api_response.json().get('business_name'), user.business_name)
+        self.assertEqual(self.api_response.json().get('identifier'), user.identifier)
+        self.assertEqual(self.api_response.json().get('full_business_name'), user.get_full_name())
+        self.assertEqual(self.api_response.json().get('owner_surname'), user.owner_surname)
+        self.assertEqual(self.api_response.json().get('owner_given_name'), user.owner_given_name)
+        self.assertFalse(self.api_response.json().get('is_superuser'))
+        self.assertFalse(self.api_response.json().get('is_staff'))
+
+    def test_api_can_edit_user(self):
+        user_to_be_updated = UserProfile.objects.get()
+
+        new_user_data = {
+            'email': 'business_email_2@email.com',
+            'password': user_to_be_updated.password,
+            'business_name': 'business2',
+            'identifier': 'street2',
+            'owner_surname': 'owner2',
+            'owner_given_name': 'owner2',
+            'address': 'address2',
+            'city': 'city2',
+            'state': 'state2'
+        }
+
+        api_response = self.client.put(
+            reverse(
+                'api:profile-detail', 
+                kwargs={'full_business_name': user_to_be_updated.full_business_name}
+            ),
+            new_user_data,
+            format='json'
+        )
+
+        updated_user = api_response.json()
+
+        self.assertEqual(api_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(updated_user.get('id'), user_to_be_updated.id)
+        self.assertEqual(updated_user.get('email'), new_user_data.get('email'))
+        self.assertNotEqual(updated_user.get('password'), new_user_data.get('password'))
+        self.assertEqual(updated_user.get('business_name'), new_user_data.get('business_name'))
+        self.assertEqual(updated_user.get('identifier'), new_user_data.get('identifier'))
+        self.assertEqual(updated_user.get('full_business_name'), '{}-{}'.format(new_user_data.get('business_name'), new_user_data.get('identifier')))
+        self.assertEqual(updated_user.get('owner_surname'), new_user_data.get('owner_surname'))
+        self.assertEqual(updated_user.get('owner_given_name'), new_user_data.get('owner_given_name'))
+        self.assertEqual(updated_user.get('address'), new_user_data.get('address'))
+        self.assertEqual(updated_user.get('city'), new_user_data.get('city'))
+        self.assertEqual(updated_user.get('state'), new_user_data.get('state'))
+
+    def test_api_can_delete_user(self):
+        user_to_be_deleted = UserProfile.objects.get()
+
+        api_response = self.client.delete(
+            reverse(
+                'api:profile-detail', 
+                kwargs={'full_business_name': user_to_be_deleted.full_business_name}
+            ),
+            format='json'
+        )
+        
+        self.assertEqual(api_response.status_code, status.HTTP_204_NO_CONTENT)
