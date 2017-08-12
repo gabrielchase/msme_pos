@@ -101,6 +101,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def __str__(self):
-        """ Business name: email """ 
+        """ business_name-identifier """ 
 
-        return self.get_full_name() + ': ' + self.get_short_name()
+        return self.get_full_name()
