@@ -1,9 +1,11 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
     BaseUserManager,
 )
+
 
 
 # Inherits and extends the Django base user manager 
@@ -17,6 +19,7 @@ class UserProfileManager(BaseUserManager):
             raise ValueError('Users must provide an email address')
 
         email = self.normalize_email(email)
+
         user = self.model(
             email=email, 
             business_name=business_name,
@@ -27,6 +30,8 @@ class UserProfileManager(BaseUserManager):
             city=city,
             state=state
         )
+
+        user.full_business_name = user.get_full_name()
 
         # `set_password` hashes the given password
         user.set_password(password)
@@ -41,8 +46,12 @@ class UserProfileManager(BaseUserManager):
         business_name = 'app'
         identifier = 'admin'
 
-        user = self.create_user(email, business_name, identifier, owner_surname, owner_given_name, password)
+        user = self.create_user(
+            email, business_name, identifier,
+            owner_surname, owner_given_name, password
+        )
 
+        user.full_business_name = user.get_full_name()
         user.is_superuser = True
         user.is_staff = True
 
@@ -59,6 +68,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     
     business_name = models.CharField(max_length=255)
     identifier = models.CharField(max_length=255, null=True)
+    full_business_name = models.CharField(max_length=255, unique=True)
 
     owner_surname = models.CharField(max_length=255)
     owner_given_name = models.CharField(max_length=255)
@@ -76,15 +86,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['business_name', 'identifier', 'owner_surname', 'owner_given_name']
 
     def get_full_name(self):
-        """ Used to get a user's business name """
+        """ Used to get a user's business name and identifier"""
 
-        # return self.business_name + '-' + self.identifier
         return '{}-{}'.format(self.business_name, self.identifier)
 
     def get_short_name(self):
         """ Used to get a user's name """
         
-        # return self.owner_surname + ', ' + self.owner_given_name
         return '{}, {}'.format(self.owner_surname, self.owner_given_name)
 
     def get_email(self):

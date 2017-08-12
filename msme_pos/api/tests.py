@@ -40,6 +40,22 @@ class ModelTestCase(TestCase):
             city=self.user_attributes.get('city'),
             state=self.user_attributes.get('state'),
         )
+    
+    def test_model_get_short_name(self):
+        new_user = UserProfile.objects.get(email='business@email.com')
+        self.assertEqual(new_user.get_short_name(), new_user.owner_surname + ', ' + new_user.owner_given_name)
+        
+    def test_model_get_full_name(self):
+        new_user = UserProfile.objects.get(email='business@email.com')
+        self.assertEqual(new_user.get_full_name(), new_user.business_name + '-' + new_user.identifier)
+
+    def test_model_get_email(self):
+        new_user = UserProfile.objects.get(email='business@email.com')
+        self.assertEqual(new_user.get_email(), new_user.email)
+
+    def test_model_str(self):
+        new_user = UserProfile.objects.get(email='business@email.com')
+        self.assertEqual(str(new_user), new_user.get_full_name() + ': ' + new_user.get_short_name())
 
     def test_model_saves_user(self):
         new_count = UserProfile.objects.count()
@@ -50,6 +66,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(new_user.email, self.user_attributes.get('email'))
         self.assertEqual(new_user.business_name, self.user_attributes.get('business_name'))
         self.assertEqual(new_user.identifier, self.user_attributes.get('identifier'))
+        self.assertEqual(new_user.full_business_name, new_user.get_full_name())
         self.assertNotEqual(new_user.password, self.user_attributes.get('password'))
         self.assertEqual(new_user.owner_surname, self.user_attributes.get('owner_surname'))
         self.assertEqual(new_user.owner_given_name, self.user_attributes.get('owner_given_name'))
@@ -58,7 +75,6 @@ class ModelTestCase(TestCase):
         self.assertEqual(new_user.state, self.user_attributes.get('state'))
         self.assertEqual(new_user.is_active, True)
         self.assertEqual(new_user.is_staff, False)
-
 
     def test_model_normalizes_email(self):
         normalize_email_attributes = {
@@ -116,6 +132,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(superuser.email, superuser_email)
         self.assertEqual(superuser.business_name, 'app')
         self.assertEqual(superuser.identifier, 'admin')
+        self.assertEqual(superuser.full_business_name, superuser.get_full_name())
         self.assertNotEqual(superuser.password, self.user_attributes.get('password'))
         self.assertEqual(superuser.owner_surname, self.user_attributes.get('owner_surname'))
         self.assertEqual(superuser.owner_given_name, self.user_attributes.get('owner_given_name'))
@@ -139,8 +156,8 @@ class ModelTestCase(TestCase):
     def test_model_saves_address_city_state_as_null(self):
         user = UserProfile.objects.create_user(
             email='nullvalues@email.com',   
-            business_name=self.user_attributes.get('business_name'),
-            identifier=self.user_attributes.get('identifier'),
+            business_name='null-values',
+            identifier='1',
             owner_surname=self.user_attributes.get('owner_surname'),
             owner_given_name=self.user_attributes.get('owner_given_name'),
             password=self.user_attributes.get('password')
@@ -152,22 +169,6 @@ class ModelTestCase(TestCase):
         self.assertEqual(user.address, None)
         self.assertEqual(user.city, None)
         self.assertEqual(user.state, None)
-
-    def test_model_get_short_name(self):
-        new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(new_user.get_short_name(), new_user.owner_surname + ', ' + new_user.owner_given_name)
-        
-    def test_model_get_full_name(self):
-        new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(new_user.get_full_name(), new_user.business_name + '-' + new_user.identifier)
-
-    def test_model_get_email(self):
-        new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(new_user.get_email(), new_user.email)
-
-    def test_model_str(self):
-        new_user = UserProfile.objects.get(email='business@email.com')
-        self.assertEqual(str(new_user), new_user.get_full_name() + ': ' + new_user.get_short_name())
 
 
 class LoginViewTestCase(TestCase):
@@ -213,3 +214,32 @@ class LoginViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('token' in response.json())
         self.assertNotEqual(response.json().get('token'), None)
+
+
+class ViewTestCase(self):
+    def setUp(self):
+        self.user_attributes = {
+            'email': 'business@email.com', 
+            'business_name': 'business',
+            'identifier': 'street',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
+            'password': 'password',
+            'address': '1 street',
+            'city': 'city',
+            'state': 'state',
+        }
+        
+        UserProfile.objects.create_user(
+            email=self.user_attributes.get('email'),
+            business_name=self.user_attributes.get('business_name'),
+            identifier=self.user_attributes.get('identifier'),
+            owner_surname=self.user_attributes.get('owner_surname'),
+            owner_given_name=self.user_attributes.get('owner_given_name'),
+            password=self.user_attributes.get('password'),
+            address=self.user_attributes.get('address'),
+            city=self.user_attributes.get('city'),
+            state=self.user_attributes.get('state'),
+        )
+
+        self.client = APIClient()

@@ -14,9 +14,10 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.all()
+    lookup_field = 'full_business_name'
     filter_backends = (filters.SearchFilter,)
     search_fields = (
-        'email', 'business_name', 'identifier', 
+        'email', 'business_name', 'identifier', 'full_business_name',
         'owner_surname', 'owner_given_name',
         'address', 'city', 'state'
     )

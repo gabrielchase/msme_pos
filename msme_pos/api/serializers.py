@@ -9,10 +9,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
-            'id', 'email', 'business_name', 'identifier', 
+            'id', 'email', 'business_name', 'identifier', 'full_business_name',
             'owner_surname', 'owner_given_name', 'password',
             'address', 'city', 'state'
         )
+        read_only_fields = ('full_business_name',)
         extra_kwargs = {'password': { 'write_only': True }}
 
     def create(self, validated_data):
@@ -28,6 +29,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             city=validated_data.get('city'),
             state=validated_data.get('state')
         )
+
+        user.full_business_name = user.get_full_name()
 
         user.set_password(validated_data.get('password'))
         user.save()
