@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from api.models import UserProfile
+from api.models import (
+    UserProfile,
+    MenuItem
+)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -13,8 +16,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'owner_surname', 'owner_given_name', 'password',
             'address', 'city', 'state'
         )
-        read_only_fields = ('full_business_name',)
-        extra_kwargs = {'password': { 'write_only': True }}
+        extra_kwargs = {
+            'full_business_name': {'read_only': True},
+            'password': { 'write_only': True }
+        }
 
     def create(self, validated_data):
         """ Create and return a new user """
@@ -50,3 +55,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    """ Serializer for user's menu item """
+
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta: 
+        model = MenuItem
+        fields = ('id', 'name', 'description', 'price', 'added_on', 'user_profile')
