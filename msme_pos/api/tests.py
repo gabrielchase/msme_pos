@@ -7,7 +7,8 @@ from rest_framework.test import APIClient
 
 from api.models import (
     UserProfile,
-    UserProfileManager
+    UserProfileManager,
+    MenuItem
 )
 
 
@@ -217,7 +218,7 @@ class LoginViewTestCase(TestCase):
         self.assertNotEqual(response.json().get('token'), None)
 
 
-class ViewTestCase(TestCase):
+class UserProfileViewSetTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.old_count = UserProfile.objects.count()
@@ -388,3 +389,288 @@ class ViewTestCase(TestCase):
         )
         
         self.assertEqual(api_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_api_can_get_own_user_profile_menu(self):
+        menu_item_data_1 = {
+            'name': 'menu item 1',
+            'description': 'menu item description 1',
+            'price': 80
+        }
+
+        menu_item_data_2 = {
+            'name': 'menu item 2',
+            'description': 'menu item description 2',
+            'price': 80
+        }
+
+        self.client.post(
+            reverse('api:menu_items-list'),
+            menu_item_data_1,
+            format='json'
+        )
+
+        self.client.post(
+            reverse('api:menu_items-list'),
+            menu_item_data_2,
+            format='json'
+        )
+
+        user_profile_menu = self.client.get(
+            reverse(
+                'api:profile-menu',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
+            format='json'
+        )
+
+        self.assertEqual(user_profile_menu.status_code, status.HTTP_200_OK)
+
+        for item in user_profile_menu.json():
+            self.assertTrue(item.get('id'))
+            self.assertIn(item.get('name'), [menu_item_data_1.get('name'), menu_item_data_2.get('name')])
+            self.assertIn(item.get('description'), [menu_item_data_1.get('description'), menu_item_data_2.get('description')])
+            self.assertIn(item.get('price'), [format(menu_item_data_1.get('price'), '.2f'), format(menu_item_data_2.get('price'), '.2f')])
+            self.assertTrue(item.get('user_profile', {}).get('id'))
+            self.assertEqual(item.get('user_profile', {}).get('email'), self.user_data.get('email'))
+
+    def test_api_cannot_get_other_user_profile_menu(self):
+        menu_item_data_1 = {
+            'name': 'menu item 1',
+            'description': 'menu item description 1',
+            'price': 80
+        }
+
+        self.client.post(
+            reverse('api:menu_items-list'),
+            menu_item_data_1,
+            format='json'
+        )
+
+        other_user_client = APIClient()
+
+        other_user_data = {
+            'email': 'other_business@email.com', 
+            'business_name': 'other_business',
+            'identifier': 'other_street',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
+            'password': 'password',
+            'address': '1 street',
+            'city': 'city',
+            'state': 'state',
+        }
+
+        other_user = other_user_client.post(
+            reverse('api:profile-list'),
+            other_user_data,
+            format='json'
+        )
+
+        other_user_login_data = {
+            'username': other_user_data.get('email'),
+            'password': other_user_data.get('password'),
+        }
+
+        other_user_login_response = self.client.post(
+            reverse('api:login-list'),
+            other_user_login_data,
+            format='json'
+        )
+
+        other_user_login_token = other_user_login_response.json().get('token')
+        other_user_client.credentials(HTTP_AUTHORIZATION='Token ' + other_user_login_token)
+
+        created_user_menu = other_user_client.get(
+            reverse(
+                'api:profile-menu',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
+            format='json'
+        )
+
+        self.assertEqual(created_user_menu.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class MenuItemViewSetTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        self.user_data = {
+            'email': 'business@email.com', 
+            'business_name': 'business',
+            'identifier': 'street',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
+            'password': 'password',
+            'address': '1 street',
+            'city': 'city',
+            'state': 'state',
+        }
+
+        self.api_response = self.client.post(
+            reverse('api:profile-list'),
+            self.user_data,
+            format='json'
+        )
+
+        self.created_user = self.api_response.json()
+
+        self.user_login_data = {
+            'username': self.user_data.get('email'),
+            'password': self.user_data.get('password'),
+        }
+
+        self.api_login_response = self.client.post(
+            reverse('api:login-list'),
+            self.user_login_data,
+            format='json'
+        )
+
+        self.login_token = self.api_login_response.json().get('token')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.login_token)
+
+        self.menu_item_data = {
+            'name': 'menu item',
+            'description': 'menu item description',
+            'price': 80
+        }
+
+    def test_api_creates_menu_item_with_logged_in_user(self):
+        created_menu_item_response = self.client.post(
+            reverse('api:menu_items-list'),
+            self.menu_item_data,
+            format='json'
+        )
+
+        self.assertEqual(created_menu_item_response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(created_menu_item_response.json().get('id'))
+        self.assertTrue(created_menu_item_response.json().get('user_profile'), self.user_data)
+
+    def test_api_cant_create_or_get_menu_items_without_logged_in_user(self):
+        no_login_client = APIClient()
+
+        created_menu_item = self.client.post(
+            reverse('api:menu_items-list'),
+            self.menu_item_data,
+            format='json'
+        )
+
+        menu_item = MenuItem.objects.get(id=str(created_menu_item.json().get('id')))
+
+        new_menu_item_data = {
+            'name': 'updated menu item',
+            'description': 'updated menu description',
+            'price': 69
+        }
+
+        created_menu_item_response = no_login_client.post(
+            reverse('api:menu_items-list'),
+            self.menu_item_data,
+            format='json'
+        )
+
+        get_menu_item_response = no_login_client.get(
+            reverse(
+                'api:menu_items-detail',
+                kwargs={'pk': menu_item.id}
+            ),
+            format='json'
+        )
+
+        updated_menu_item_response = no_login_client.put(
+            reverse(
+                'api:menu_items-detail', 
+                kwargs={'pk': menu_item.id}
+            ),
+            new_menu_item_data,
+            format='json'
+        )
+
+        delete_menu_item_response = no_login_client.delete(
+            reverse(
+                'api:menu_items-detail', 
+                kwargs={'pk': menu_item.id}
+            ),
+            format='json'
+        )
+
+        self.assertEqual(created_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(get_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(updated_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(delete_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_cant_edit_or_delete_menu_item_as_other_user(self):
+        created_menu_item = self.client.post(
+            reverse('api:menu_items-list'),
+            self.menu_item_data,
+            format='json'
+        )
+
+        other_client = APIClient()
+
+        other_user_data = {
+            'email': 'other_business@email.com', 
+            'business_name': 'other_business',
+            'identifier': 'other_street',
+            'owner_surname': 'test',
+            'owner_given_name': 'test',
+            'password': 'password',
+            'address': '1 street',
+            'city': 'city',
+            'state': 'state',
+        }
+
+        other_user = other_client.post(
+            reverse('api:profile-list'),
+            other_user_data,
+            format='json'
+        ).json()
+
+        other_user_login_data = {
+            'username': other_user_data.get('email'),
+            'password': other_user_data.get('password')
+        }
+
+        api_login_response = other_client.post(
+            reverse('api:login-list'),
+            other_user_login_data,
+            format='json'
+        )
+
+        login_token = api_login_response.json().get('token')
+        
+        other_client.credentials(HTTP_AUTHORIZATION='Token ' + login_token)
+
+        get_menu_item_response = other_client.get(
+            reverse(
+                'api:menu_items-detail',
+                kwargs={'pk': created_menu_item.json().get('id')}
+            ),
+            format='json'
+        )
+
+        update_menu_response = {
+            'name': 'other',
+            'price': 69
+        }
+
+        update_menu_item_response = other_client.put(
+            reverse(
+                'api:menu_items-detail',
+                kwargs={'pk': created_menu_item.json().get('id')}
+            ),
+            update_menu_response,
+            format='json'
+        )
+
+        delete_menu_item_response = other_client.delete(
+            reverse(
+                'api:menu_items-detail',
+                kwargs={'pk': created_menu_item.json().get('id')}
+            ),
+            format='json'
+        )
+
+        self.assertEqual(get_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(update_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(delete_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
