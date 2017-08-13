@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import IsAuthenticated
+
 
 from api.models import (
     UserProfile,
@@ -64,7 +66,7 @@ class MenuItemViewSet(viewsets.ModelViewSet):
     serializer_class = MenuItemSerializer
     queryset = MenuItem.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (PostOwnMenuItem,)
+    permission_classes = (IsAuthenticated, PostOwnMenuItem,)
 
     def perform_create(self, serializer):
         """ Set current user as the MenuItem's user_profile """

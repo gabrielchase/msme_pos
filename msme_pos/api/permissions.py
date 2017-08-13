@@ -20,9 +20,7 @@ class GetOwnMenu(permissions.BasePermission):
 
 
 class PostOwnMenuItem(permissions.BasePermission):
-    """ Allow user to update their own menu item """
+    """ Allow user to update or delete their own menu item """
 
     def has_object_permission(self, request, view, obj):
-        print(obj.user_profile)
-        print(request.user)
         return obj.user_profile == request.user
