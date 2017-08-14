@@ -1,10 +1,10 @@
-from django.shortcuts import render
-
 from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import mixins
+from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -55,23 +55,44 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         }
 
         menu_items = MenuItem.objects.filter(user_profile=request.user)
-        menu_item_serializer = MenuItemSerializer(menu_items, many=True, context=context)
+        serialized_menu_items = MenuItemSerializer(menu_items, many=True, context=context)
         
-        return Response(menu_item_serializer.data)
+        return Response(serialized_menu_items.data)
 
 
-class MenuItemViewSet(viewsets.ModelViewSet):
-    """ Handles creating, updating, and deleting UserProfile's MenuItem """
-
+class MenuItemCreateAPIView(generics.CreateAPIView):
     serializer_class = MenuItemSerializer
     queryset = MenuItem.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated, PostOwnMenuItem,)
+    permission_classes = (IsAuthenticated,)
 
-    def perform_create(self, serializer):
-        """ Set current user as the MenuItem's user_profile """
+    def post(self, request, *args, **kwargs):
+        new_menu_item = MenuItem.objects.create(
+            name=request.data.get('name'),
+            description=request.data.get('description'),
+            price=request.data.get('price'),
+            user_profile=request.user
+        )
 
-        serializer.save(user_profile=self.request.user)
+        serialized_menu_item = MenuItemSerializer(new_menu_item)
+
+        return Response(serialized_menu_item.data)
+
+
+class MenuItemDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.RetrieveAPIView):
+    """ Handles getting, updating, and deleting UserProfile's MenuItem """
+
+    serializer_class = MenuItemSerializer
+    queryset = MenuItem.objects.all()
+    lookup_field = 'pk'
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated, PostOwnMenuItem,)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class LoginViewSet(viewsets.ViewSet):
