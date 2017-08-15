@@ -8,7 +8,10 @@ from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAdminUser,
+    IsAuthenticated,
+)
 
 
 from api.models import (
@@ -58,6 +61,13 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         serialized_menu_items = MenuItemSerializer(menu_items, many=True, context=context)
         
         return Response(serialized_menu_items.data)
+
+
+class MenuItemListAPIView(generics.ListAPIView):
+    serializer_class = MenuItemSerializer
+    queryset = MenuItem.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminUser,)
 
 
 class MenuItemCreateAPIView(generics.CreateAPIView):

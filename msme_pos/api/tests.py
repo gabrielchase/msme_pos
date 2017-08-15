@@ -535,6 +535,38 @@ class MenuItemViewSetTestCase(TestCase):
             'price': 80
         }
 
+        self.superuser_data = {
+            'email': 'superuser@email.com', 
+            'business_name': 'app',
+            'identifier': 'admin',
+            'owner_surname': 'user',
+            'owner_given_name': 'super',
+            'password': 'superuser'
+        }
+
+        self.superuser = UserProfile.objects.create_superuser(
+            email='superuser@email.com', 
+            owner_surname='user',
+            owner_given_name='super',
+            password='superuser'
+        )
+
+        self.superuser_login_data = {
+            'username': self.superuser_data.get('email'),
+            'password': self.superuser_data.get('password')
+        }
+
+        self.superuser_client = APIClient()
+
+        self.superuser_api_login_response = self.client.post(
+            reverse('api:login-list'),
+            self.superuser_login_data,
+            format='json'
+        )
+
+        self.superuser_login_token = self.superuser_api_login_response.json().get('token')
+        self.superuser_client.credentials(HTTP_AUTHORIZATION='Token ' + self.superuser_login_token)
+
     def test_api_creates_menu_item_with_logged_in_user(self):
         created_menu_item_response = self.client.post(
             reverse('api:menu_items_create'),
@@ -677,3 +709,32 @@ class MenuItemViewSetTestCase(TestCase):
         self.assertEqual(get_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(update_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(delete_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def only_admin_can_get_all_menu_items(self):
+        authenticated_user_api_response = self.client.get(
+            reverse('api:menu_items_list'),
+            format='json'
+        )
+
+        print(authenticated_user_api_response.status_code)
+        print(authenticated_user_api_response.json())
+
+        unauthenticated_client = APIClient()
+
+        unauthenticated_client_response = unauthenticated_client.get(
+            reverse('api:menu_items_list'),
+            format='json'
+        ).json()
+
+        print(unauthenticated_client.status_code)
+        print(unauthenticated_client.json())
+
+        superuser_get_menu_list_response = self.superuser_client.get(
+            reverse('api:menu_item_list'),
+            format='json'
+        ).json()
+
+        self.assertEqual(authenticated_user_api_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(unauthenticated_client_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(superuser_get_menu_list_response.status_code, status.HTTP_200_OK)
+
