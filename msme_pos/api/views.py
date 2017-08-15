@@ -85,8 +85,8 @@ class MenuItemDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, g
     serializer_class = MenuItemSerializer
     queryset = MenuItem.objects.all()
     lookup_field = 'pk'
-    # authentication_classes = (TokenAuthentication,)
-    # permission_classes = (IsAuthenticated, PostOwnMenuItem,)
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, PostOwnMenuItem,)
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
