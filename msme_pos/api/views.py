@@ -45,23 +45,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     )
     authentication_classes = (TokenAuthentication,)
     permission_classes = (UpdateOwnProfile,)
-
     
-    @detail_route(methods=['get'], permission_classes=[GetOwnMenu], url_path='menu')
-    def menu(self, request, full_business_name=None):
-
-        if full_business_name != str(request.user):
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        context = {
-            'request': request
-        }
-
-        menu_items = MenuItem.objects.filter(user_profile=request.user)
-        serialized_menu_items = MenuItemSerializer(menu_items, many=True, context=context)
-        
-        return Response(serialized_menu_items.data)
-
 
 class MenuItemListAPIView(generics.ListAPIView):
     serializer_class = MenuItemSerializer
@@ -96,7 +80,7 @@ class MenuItemDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, g
     queryset = MenuItem.objects.all()
     lookup_field = 'pk'
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated, PostOwnMenuItem,)
+    permission_classes = (IsAdminUser, IsAuthenticated, PostOwnMenuItem,)
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)

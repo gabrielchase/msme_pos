@@ -85,6 +85,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['business_name', 'identifier', 'owner_surname', 'owner_given_name']
 
+
     def get_full_name(self):
         """ Used to get a user's business name and identifier"""
 
@@ -109,11 +110,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 class MenuItem(models.Model):
     """ User's menu items """
 
-    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
     name = models.CharField(max_length=255, blank=False)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
     added_on = models.DateTimeField(auto_now_add=True)
+    user_profile = models.ForeignKey('UserProfile', related_name='menu_items', on_delete=models.CASCADE)
 
     def __str__(self):
         

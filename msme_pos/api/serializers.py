@@ -6,15 +6,27 @@ from api.models import (
 )
 
 
+class MenuItemSerializer(serializers.ModelSerializer):
+    """ Serializer for user's menu item """
+
+    # user_profile = UserProfileSerializer(many=False, read_only=True)
+
+    class Meta: 
+        model = MenuItem
+        fields = ('id', 'name', 'description', 'price', 'added_on', 'user_profile')
+        
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """ Serializer for UserProfile objects"""
+    
+    menu_items = MenuItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = UserProfile
         fields = (
             'id', 'email', 'business_name', 'identifier', 'full_business_name',
             'owner_surname', 'owner_given_name', 'password',
-            'address', 'city', 'state'
+            'address', 'city', 'state', 'menu_items'
         )
         extra_kwargs = {
             'full_business_name': {'read_only': True},
@@ -55,13 +67,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
-
-
-class MenuItemSerializer(serializers.ModelSerializer):
-    """ Serializer for user's menu item """
-
-    user_profile = UserProfileSerializer(read_only=True)
-
-    class Meta: 
-        model = MenuItem
-        fields = ('id', 'name', 'description', 'price', 'added_on', 'user_profile')
