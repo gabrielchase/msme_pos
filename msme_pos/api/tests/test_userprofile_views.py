@@ -32,7 +32,7 @@ class UserProfileViewSetTestCase(TestCase):
         }
 
         self.api_response = self.client.post(
-            reverse('api:profile-list'),
+            reverse('api:profiles_create'),
             self.user_data,
             format='json'
         )
@@ -63,8 +63,10 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertFalse(self.api_response.json().get('is_staff'))
 
     def test_api_can_get_user_list(self):
+        """ Only allow admin to get user list in future """
+
         self.api_response = self.client.get(
-            reverse('api:profile-list'),
+            reverse('api:profiles_list'),
             format='json'
         )
 
@@ -74,9 +76,11 @@ class UserProfileViewSetTestCase(TestCase):
             self.assertTrue(user.get('id'))
 
     def test_api_can_get_user(self):
+        """ Only allow admin or self to get user list in future """
+
         api_response = self.client.get(
             reverse(
-                'api:profile-detail', 
+                'api:profiles_detail', 
                 kwargs={'full_business_name': self.created_user.get('full_business_name')}
             ),
             format='json'
@@ -110,7 +114,7 @@ class UserProfileViewSetTestCase(TestCase):
 
         api_response = self.client.put(
             reverse(
-                'api:profile-detail', 
+                'api:profiles_detail', 
                 kwargs={'full_business_name': user_to_be_updated.full_business_name}
             ),
             new_user_data,
@@ -137,7 +141,7 @@ class UserProfileViewSetTestCase(TestCase):
 
         api_response = self.client.delete(
             reverse(
-                'api:profile-detail', 
+                'api:profiles_detail', 
                 kwargs={'full_business_name': user_to_be_deleted.full_business_name}
             ),
             format='json'
@@ -163,7 +167,7 @@ class UserProfileViewSetTestCase(TestCase):
 
         api_response = no_token_client.put(
             reverse(
-                'api:profile-detail', 
+                'api:profiles_detail', 
                 kwargs={'full_business_name': user_to_be_updated.full_business_name}
             ),
             new_user_data,
@@ -178,7 +182,7 @@ class UserProfileViewSetTestCase(TestCase):
 
         api_response = no_token_client.delete(
             reverse(
-                'api:profile-detail', 
+                'api:profiles_detail', 
                 kwargs={'full_business_name': user_to_be_deleted.full_business_name}
             ),
             format='json'

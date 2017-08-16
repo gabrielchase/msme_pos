@@ -25,13 +25,26 @@ from api.serializers import (
 )
 
 from api.permissions import (
-    UpdateOwnProfile,
-    PostOwnMenuItem,
-    GetOwnMenu
+    GetAndUpdateOwnProfile,
+    GetAndUpdateOwnMenuItem
 )
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserProfileListAPIView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    queryset = UserProfile.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminUser,)
+
+
+class UserProfileCreateAPIView(generics.CreateAPIView):
+    serializer_class = UserProfileSerializer
+    queryset = UserProfile.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+
+class UserProfileDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.RetrieveAPIView):
     """ Handles creating, updating, and deleting UserProfile """
 
     serializer_class = UserProfileSerializer
@@ -44,7 +57,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         'address', 'city', 'state'
     )
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (UpdateOwnProfile,)
+    permission_classes = (IsAuthenticated, GetAndUpdateOwnProfile,)
     
 
 class MenuItemListAPIView(generics.ListAPIView):
@@ -80,7 +93,7 @@ class MenuItemDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, g
     queryset = MenuItem.objects.all()
     lookup_field = 'pk'
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAdminUser, IsAuthenticated, PostOwnMenuItem,)
+    permission_classes = (IsAuthenticated, GetAndUpdateOwnMenuItem,)
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
