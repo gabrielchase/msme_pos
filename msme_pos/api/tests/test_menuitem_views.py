@@ -31,7 +31,7 @@ class MenuItemViewSetTestCase(TestCase):
         }
 
         self.api_response = self.client.post(
-            reverse('api:profile-list'),
+            reverse('api:profiles_create'),
             self.user_data,
             format='json'
         )
@@ -96,9 +96,6 @@ class MenuItemViewSetTestCase(TestCase):
             self.menu_item_data,
             format='json'
         )
-
-        print(created_menu_item_response.status_code)
-        print(created_menu_item_response.json())
 
         self.assertEqual(created_menu_item_response.status_code, status.HTTP_200_OK)
         self.assertTrue(created_menu_item_response.json().get('id'))
@@ -179,7 +176,7 @@ class MenuItemViewSetTestCase(TestCase):
         }
 
         other_user = other_client.post(
-            reverse('api:profile-list'),
+            reverse('api:profiles_create'),
             other_user_data,
             format='json'
         ).json()
@@ -239,18 +236,12 @@ class MenuItemViewSetTestCase(TestCase):
             format='json'
         )
 
-        print(authenticated_user_api_response.status_code)
-        print(authenticated_user_api_response.json())
-
         unauthenticated_client = APIClient()
 
         unauthenticated_client_response = unauthenticated_client.get(
             reverse('api:menu_items_list'),
             format='json'
         ).json()
-
-        print(unauthenticated_client.status_code)
-        print(unauthenticated_client.json())
 
         superuser_get_menu_list_response = self.superuser_client.get(
             reverse('api:menu_item_list'),

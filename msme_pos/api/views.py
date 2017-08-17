@@ -41,10 +41,9 @@ class UserProfileCreateAPIView(generics.CreateAPIView):
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
 
-class UserProfileDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.RetrieveAPIView):
+class UserProfileDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """ Handles creating, updating, and deleting UserProfile """
 
     serializer_class = UserProfileSerializer
@@ -57,7 +56,7 @@ class UserProfileDetailAPIView(mixins.UpdateModelMixin, mixins.DestroyModelMixin
         'address', 'city', 'state'
     )
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated, GetAndUpdateOwnProfile,)
+    permission_classes = (GetAndUpdateOwnProfile,)
     
 
 class MenuItemListAPIView(generics.ListAPIView):

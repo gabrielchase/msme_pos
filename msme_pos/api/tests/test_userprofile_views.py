@@ -54,6 +54,37 @@ class UserProfileViewSetTestCase(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.login_token)
 
 
+        self.superuser_client = APIClient()
+
+        self.superuser = UserProfile.objects.create_superuser(
+            email='superuser@test.com',
+            owner_surname='superuser',
+            owner_given_name='superuser',
+            password='password'
+        )
+
+        print(self.superuser.is_superuser)
+
+        self.superuser_login_data = {
+            'username': self.superuser.email,
+            'password': 'password'
+        }
+
+        self.superuser_api_login_response = self.superuser_client.post(
+            reverse('api:login-list'),
+            self.user_login_data,
+            format='json'
+        )
+
+        # print(self.superuser_api_login_response.json().get('token'))
+
+        self.superuser_client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.superuser_api_login_response.json().get('token')
+        )
+
+        # print(self.superuser_api_login_response.json())
+
+
     def test_api_can_create_user(self):
         new_count = UserProfile.objects.count()
 
@@ -65,15 +96,28 @@ class UserProfileViewSetTestCase(TestCase):
     def test_api_can_get_user_list(self):
         """ Only allow admin to get user list in future """
 
-        self.api_response = self.client.get(
+        unauthenticated_client = APIClient()
+
+        authenticated_api_response = self.client.get(
             reverse('api:profiles_list'),
             format='json'
         )
 
-        self.assertTrue(self.api_response.json())
+        unauthenticated_api_response = unauthenticated_client.get(
+            reverse('api:profiles_list'),
+            format='json'
+        )
 
-        for user in self.api_response.json():
-            self.assertTrue(user.get('id'))
+        superuser_api_response = self.superuser_client.get(
+            reverse('api:profiles_list'),
+            format='json'
+        )
+
+        print(superuser_api_response.status_code, superuser_api_response.json())
+
+        self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(superuser_api_response.status_code, status.HTTP_200_OK)
 
     def test_api_can_get_user(self):
         """ Only allow admin or self to get user list in future """
@@ -98,7 +142,7 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertFalse(api_response.json().get('is_staff'))
 
     def test_api_can_update_user(self):
-        user_to_be_updated = UserProfile.objects.get()
+        user_to_be_updated = UserProfile.objects.get(email=self.created_user.get('email'))
 
         new_user_data = {
             'email': 'business_email_2@email.com',
@@ -137,7 +181,7 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(updated_user.get('state'), new_user_data.get('state'))
 
     def test_api_can_delete_user(self):
-        user_to_be_deleted = UserProfile.objects.get()
+        user_to_be_deleted = UserProfile.objects.get(email=self.created_user.get('email'))
 
         api_response = self.client.delete(
             reverse(
@@ -151,7 +195,7 @@ class UserProfileViewSetTestCase(TestCase):
 
     def test_api_cannot_update_without_token(self):
         no_token_client = APIClient()
-        user_to_be_updated = UserProfile.objects.get()
+        user_to_be_updated = UserProfile.objects.get(email=self.created_user.get('email'))
 
         new_user_data = {
             'email': 'business_email_2@email.com',
@@ -178,7 +222,7 @@ class UserProfileViewSetTestCase(TestCase):
 
     def test_api_cannot_delete_without_token(self):
         no_token_client = APIClient()
-        user_to_be_deleted = UserProfile.objects.get()
+        user_to_be_deleted = UserProfile.objects.get(email=self.created_user.get('email'))
 
         api_response = no_token_client.delete(
             reverse(

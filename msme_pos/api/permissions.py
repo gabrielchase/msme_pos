@@ -7,7 +7,7 @@ class GetAndUpdateOwnProfile(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         """ Check if user is trying their update or delete their own profile """
 
-        return obj.id == request.user.id
+        return obj.id == request.user.id or request.user.is_superuser
 
 
 class GetAndUpdateOwnMenuItem(permissions.BasePermission):
