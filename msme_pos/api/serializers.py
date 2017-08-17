@@ -9,11 +9,10 @@ from api.models import (
 class MenuItemSerializer(serializers.ModelSerializer):
     """ Serializer for user's menu item """
 
-    # user_profile = UserProfileSerializer(many=False, read_only=True)
-
     class Meta: 
         model = MenuItem
         fields = ('id', 'name', 'description', 'price', 'added_on', 'user_profile')
+        extra_kwargs = {'user_profile': {'read_only': True}}
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
