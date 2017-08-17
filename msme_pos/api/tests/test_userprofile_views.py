@@ -72,7 +72,7 @@ class UserProfileViewSetTestCase(TestCase):
 
         self.superuser_api_login_response = self.superuser_client.post(
             reverse('api:login-list'),
-            self.user_login_data,
+            self.superuser_login_data,
             format='json'
         )
 
@@ -81,6 +81,10 @@ class UserProfileViewSetTestCase(TestCase):
         self.superuser_client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.superuser_api_login_response.json().get('token')
         )
+
+        self.unauthenticated_client = APIClient()
+
+        # print(self.superuser_client)
 
         # print(self.superuser_api_login_response.json())
 
@@ -94,8 +98,6 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertFalse(self.api_response.json().get('is_staff'))
 
     def test_api_can_get_user_list(self):
-        """ Only allow admin to get user list in future """
-
         unauthenticated_client = APIClient()
 
         authenticated_api_response = self.client.get(
@@ -120,9 +122,25 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(superuser_api_response.status_code, status.HTTP_200_OK)
 
     def test_api_can_get_user(self):
-        """ Only allow admin or self to get user list in future """
-
         api_response = self.client.get(
+            reverse(
+                'api:profiles_detail', 
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
+            format='json'
+        )
+
+        superuser_api_response = self.superuser_client.get(
+            reverse(
+                'api:profiles_detail', 
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
+            format='json'
+        )
+
+        other_client = APIClient()
+
+        unauthenticated_api_response = self.unauthenticated_client.get(
             reverse(
                 'api:profiles_detail', 
                 kwargs={'full_business_name': self.created_user.get('full_business_name')}
@@ -140,6 +158,9 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(api_response.json().get('owner_given_name'), self.created_user.get('owner_given_name'))
         self.assertFalse(api_response.json().get('is_superuser'))
         self.assertFalse(api_response.json().get('is_staff'))
+
+        self.assertEqual(unauthenticated_api_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(superuser_api_response.status_code, status.HTTP_200_OK)
 
     def test_api_can_update_user(self):
         user_to_be_updated = UserProfile.objects.get(email=self.created_user.get('email'))

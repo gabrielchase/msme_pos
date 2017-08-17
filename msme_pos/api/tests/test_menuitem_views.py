@@ -81,7 +81,7 @@ class MenuItemViewSetTestCase(TestCase):
 
         self.superuser_client = APIClient()
 
-        self.superuser_api_login_response = self.client.post(
+        self.superuser_api_login_response = self.superuser_client.post(
             reverse('api:login-list'),
             self.superuser_login_data,
             format='json'
