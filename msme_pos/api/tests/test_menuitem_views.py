@@ -92,7 +92,10 @@ class MenuItemViewSetTestCase(TestCase):
 
     def test_api_creates_menu_item_with_logged_in_user(self):
         created_menu_item_response = self.client.post(
-            reverse('api:menu_items_create'),
+            reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
             self.menu_item_data,
             format='json'
         )
@@ -105,7 +108,10 @@ class MenuItemViewSetTestCase(TestCase):
         no_login_client = APIClient()
 
         created_menu_item = self.client.post(
-            reverse('api:menu_items_create'),
+            reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
             self.menu_item_data,
             format='json'
         )
@@ -119,7 +125,10 @@ class MenuItemViewSetTestCase(TestCase):
         }
 
         created_menu_item_response = no_login_client.post(
-            reverse('api:menu_items_create'),
+            reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
             self.menu_item_data, 
             format='json'
         )
@@ -127,7 +136,10 @@ class MenuItemViewSetTestCase(TestCase):
         get_menu_item_response = no_login_client.get(
             reverse(
                 'api:menu_items_detail',
-                kwargs={'pk': menu_item.id}
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'pk': menu_item.id
+                }
             ),
             format='json'
         )
@@ -135,7 +147,10 @@ class MenuItemViewSetTestCase(TestCase):
         updated_menu_item_response = no_login_client.put(
             reverse(
                 'api:menu_items_detail', 
-                kwargs={'pk': menu_item.id}
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'pk': menu_item.id
+                }
             ),
             new_menu_item_data,
             format='json'
@@ -144,7 +159,10 @@ class MenuItemViewSetTestCase(TestCase):
         delete_menu_item_response = no_login_client.delete(
             reverse(
                 'api:menu_items_detail', 
-                kwargs={'pk': menu_item.id}
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'pk': menu_item.id
+                }
             ),
             format='json'
         )
@@ -156,7 +174,10 @@ class MenuItemViewSetTestCase(TestCase):
 
     def test_cant_edit_or_delete_menu_item_as_other_user(self):
         created_menu_item = self.client.post(
-            reverse('api:menu_items_create'),
+            reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
             self.menu_item_data,
             format='json'
         )
@@ -199,7 +220,10 @@ class MenuItemViewSetTestCase(TestCase):
         get_menu_item_response = other_client.get(
             reverse(
                 'api:menu_items_detail',
-                kwargs={'pk': created_menu_item.json().get('id')}
+                kwargs={
+                    'full_business_name': other_user.get('full_business_name'),
+                    'pk': created_menu_item.json().get('id')
+                }
             ),
             format='json'
         )
@@ -212,7 +236,10 @@ class MenuItemViewSetTestCase(TestCase):
         update_menu_item_response = other_client.put(
             reverse(
                 'api:menu_items_detail',
-                kwargs={'pk': created_menu_item.json().get('id')}
+                kwargs={
+                    'full_business_name': other_user.get('full_business_name'),
+                    'pk': created_menu_item.json().get('id')
+                }
             ),
             update_menu_response,
             format='json'
@@ -221,7 +248,10 @@ class MenuItemViewSetTestCase(TestCase):
         delete_menu_item_response = other_client.delete(
             reverse(
                 'api:menu_items_detail',
-                kwargs={'pk': created_menu_item.json().get('id')}
+                kwargs={
+                    'full_business_name': other_user.get('full_business_name'),
+                    'pk': created_menu_item.json().get('id')
+                }
             ),
             format='json'
         )
