@@ -121,13 +121,13 @@ class ItemOrderCreateAPIView(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, full_business_name=None, menu_item_name=None):
-        menu_item = MenuItem.objects.get(name=menu_item_name)
+        menu_item = MenuItem.objects.get(url_param_name=menu_item_name)
         serialized_menu_item = MenuItemSerializer(menu_item)
 
         return Response(serialized_menu_item.data)
 
     def post(self, request, full_business_name=None, menu_item_name=None, *args):
-        menu_item = MenuItem.objects.get(id=menu_item_name)
+        menu_item = MenuItem.objects.get(url_param_name=menu_item_name)
 
         item_order = ItemOrder.objects.create(
             quantity=request.data.get('quantity'),
