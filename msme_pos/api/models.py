@@ -120,3 +120,15 @@ class MenuItem(models.Model):
         
         return self.name
 
+
+class ItemOrder(models.Model):
+    """ ItemOrder model """
+
+    quantity = models.IntegerField()
+    ordered_on = models.DateTimeField(auto_now_add=True)
+    additional_notes = models.TextField()
+    menu_item = models.ForeignKey('MenuItem', related_name='item_orders', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.quantity) + ' orders of ' + self.menu_item.name + ' from ' + self.menu_item.name
+

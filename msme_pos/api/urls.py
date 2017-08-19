@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<pk>\d+)/$', MenuItemDetailAPIView.as_view(), name='menu_items_detail'),
     url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/create/$', MenuItemCreateAPIView.as_view(), name='menu_items_create'),
     url(r'menu_items/$', MenuItemListAPIView.as_view(), name='menu_items_list'),
+    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<pk>\d+)/order/$', ItemOrderCreateAPIView.as_view(), name='order_item_create'),
     # url(r'menu_items/(?P<pk>\d+)/$', MenuItemDetailAPIView.as_view(), name='menu_items_detail'),
     # url(r'menu_items/(?P<pk>\d+)/item_order/create/$', ItemOrderCreateAPIView.as_view(), name='item_order_create'),
 ]

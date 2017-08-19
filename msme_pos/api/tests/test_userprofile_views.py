@@ -63,7 +63,7 @@ class UserProfileViewSetTestCase(TestCase):
             password='password'
         )
 
-        print(self.superuser.is_superuser)
+        # print(self.superuser.is_superuser)
 
         self.superuser_login_data = {
             'username': self.superuser.email,
@@ -115,7 +115,7 @@ class UserProfileViewSetTestCase(TestCase):
             format='json'
         )
 
-        print(superuser_api_response.status_code, superuser_api_response.json())
+        # print(superuser_api_response.status_code, superuser_api_response.json())
 
         self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)

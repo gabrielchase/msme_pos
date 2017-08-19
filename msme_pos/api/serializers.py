@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from api.models import (
     UserProfile,
-    MenuItem
+    MenuItem,
+    ItemOrder
 )
 
 
@@ -66,3 +67,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class ItemOrderSerializer(serializers.ModelSerializer):
+    """ Serializer for an User's Menu Item order """
+
+    class Meta:
+        model = ItemOrder
+        fields = ['quantity', 'menu_item', 'ordered_on', 'additional_notes']
+        extra_kwargs = {
+            'menu_item': {'read_only': True},
+        }
