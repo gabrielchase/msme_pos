@@ -27,7 +27,8 @@ from api.serializers import (
 
 from api.permissions import (
     GetAndUpdateOwnProfile,
-    GetAndUpdateOwnMenuItem
+    GetAndUpdateOwnMenuItem,
+    GetAndUpdateOwnOrderItem
 )
 
 
@@ -41,7 +42,6 @@ class UserProfileListAPIView(generics.ListAPIView):
 class UserProfileCreateAPIView(generics.CreateAPIView):
     serializer_class = UserProfileSerializer
     queryset = UserProfile.objects.all()
-    authentication_classes = (TokenAuthentication,)
 
 
 class UserProfileDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -91,8 +91,8 @@ class MenuItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = MenuItemSerializer
     queryset = MenuItem.objects.all()
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'menu_item_pk'
+    lookup_field = 'url_param_name'
+    lookup_url_kwarg = 'menu_item_name'
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated, GetAndUpdateOwnMenuItem,)
 
@@ -120,14 +120,14 @@ class ItemOrderCreateAPIView(generics.CreateAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, full_business_name=None, menu_item_pk=None):
-        menu_item = MenuItem.objects.get(id=menu_item_pk)
+    def get(self, request, full_business_name=None, menu_item_name=None):
+        menu_item = MenuItem.objects.get(name=menu_item_name)
         serialized_menu_item = MenuItemSerializer(menu_item)
 
         return Response(serialized_menu_item.data)
 
-    def post(self, request, full_business_name=None, menu_item_pk=None, *args):
-        menu_item = MenuItem.objects.get(id=menu_item_pk)
+    def post(self, request, full_business_name=None, menu_item_name=None, *args):
+        menu_item = MenuItem.objects.get(id=menu_item_name)
 
         item_order = ItemOrder.objects.create(
             quantity=request.data.get('quantity'),
@@ -143,8 +143,9 @@ class ItemOrderCreateAPIView(generics.CreateAPIView):
 class ItemOrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """ Serializer for UserProfile objects"""
     
-    serializer_class = ItemOrder
+    serializer_class = ItemOrderSerializer
     queryset = ItemOrder.objects.all()
     authentication_classes = (TokenAuthentication,)
+    permission_classes = (GetAndUpdateOwnOrderItem,)
     lookup_field = 'pk'
     lookup_url_kwarg = 'item_order_pk'

@@ -101,7 +101,7 @@ class MenuItemViewSetTestCase(TestCase):
         )
 
         self.assertEqual(created_menu_item_response.status_code, status.HTTP_200_OK)
-        self.assertTrue(created_menu_item_response.json().get('id'))
+        self.assertTrue(created_menu_item_response.json().get('url_param_name'))
         self.assertTrue(created_menu_item_response.json().get('user_profile'), self.user_data)
 
     def test_api_cant_create_or_get_menu_items_without_logged_in_user(self):
@@ -116,7 +116,7 @@ class MenuItemViewSetTestCase(TestCase):
             format='json'
         )
 
-        menu_item = MenuItem.objects.get(id=str(created_menu_item.json().get('id')))
+        menu_item = MenuItem.objects.get(id=created_menu_item.json().get('id'))
 
         new_menu_item_data = {
             'name': 'updated menu item',
@@ -138,7 +138,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'menu_item_pk': menu_item.id
+                    'menu_item_name': menu_item.id
                 }
             ),
             format='json'
@@ -149,7 +149,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail', 
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'menu_item_pk': menu_item.id
+                    'menu_item_name': menu_item.id
                 }
             ),
             new_menu_item_data,
@@ -161,7 +161,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail', 
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'menu_item_pk': menu_item.id
+                    'menu_item_name': menu_item.id
                 }
             ),
             format='json'
@@ -181,6 +181,12 @@ class MenuItemViewSetTestCase(TestCase):
             self.menu_item_data,
             format='json'
         )
+
+        print(self.created_user.get('full_business_name'))
+        print(reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ))
 
         other_client = APIClient()
 
@@ -217,12 +223,17 @@ class MenuItemViewSetTestCase(TestCase):
         
         other_client.credentials(HTTP_AUTHORIZATION='Token ' + login_token)
 
+        print('-----')
+        print(created_menu_item.json())
+        print(created_menu_item.json().get('url_param_name'))
+        print('-----')
+
         get_menu_item_response = other_client.get(
             reverse(
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'menu_item_pk': created_menu_item.json().get('id')
+                    'menu_item_name': created_menu_item.json().get('url_param_name')
                 }
             ),
             format='json'
@@ -233,24 +244,27 @@ class MenuItemViewSetTestCase(TestCase):
             'price': 69
         }
 
+        print(created_menu_item.json().get('url_param_name'))
+
         update_menu_item_response = other_client.put(
             reverse(
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'menu_item_pk': created_menu_item.json().get('id')
+                    'menu_item_name': created_menu_item.json().get('url_param_name')
                 }
             ),
             update_menu_response,
             format='json'
         )
 
+
         delete_menu_item_response = other_client.delete(
             reverse(
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'menu_item_pk': created_menu_item.json().get('id')
+                    'menu_item_name': created_menu_item.json().get('url_param_name')
                 }
             ),
             format='json'
