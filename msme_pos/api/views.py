@@ -28,7 +28,8 @@ from api.serializers import (
 from api.permissions import (
     GetAndUpdateOwnProfile,
     GetAndUpdateOwnMenuItem,
-    GetAndUpdateOwnOrderItem
+    GetAndUpdateOwnOrderItem,
+    CreateOrderItem
 )
 
 
@@ -118,13 +119,16 @@ class ItemOrderCreateAPIView(generics.CreateAPIView):
     serializer_class = ItemOrderSerializer
     queryset = ItemOrder.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (CreateOrderItem,)
 
     def get(self, request, full_business_name=None, menu_item_name=None):
         menu_item = MenuItem.objects.get(url_param_name=menu_item_name)
-        serialized_menu_item = MenuItemSerializer(menu_item)
 
-        return Response(serialized_menu_item.data)
+        if request.user == menu_item.user_profile:
+            serialized_menu_item = MenuItemSerializer(menu_item)
+            return Response(serialized_menu_item.data)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request, full_business_name=None, menu_item_name=None, *args):
         menu_item = MenuItem.objects.get(url_param_name=menu_item_name)
