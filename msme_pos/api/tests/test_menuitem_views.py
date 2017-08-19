@@ -138,7 +138,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'pk': menu_item.id
+                    'menu_item_pk': menu_item.id
                 }
             ),
             format='json'
@@ -149,7 +149,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail', 
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'pk': menu_item.id
+                    'menu_item_pk': menu_item.id
                 }
             ),
             new_menu_item_data,
@@ -161,7 +161,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail', 
                 kwargs={
                     'full_business_name': self.created_user.get('full_business_name'),
-                    'pk': menu_item.id
+                    'menu_item_pk': menu_item.id
                 }
             ),
             format='json'
@@ -222,7 +222,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'pk': created_menu_item.json().get('id')
+                    'menu_item_pk': created_menu_item.json().get('id')
                 }
             ),
             format='json'
@@ -238,7 +238,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'pk': created_menu_item.json().get('id')
+                    'menu_item_pk': created_menu_item.json().get('id')
                 }
             ),
             update_menu_response,
@@ -250,7 +250,7 @@ class MenuItemViewSetTestCase(TestCase):
                 'api:menu_items_detail',
                 kwargs={
                     'full_business_name': other_user.get('full_business_name'),
-                    'pk': created_menu_item.json().get('id')
+                    'menu_item_pk': created_menu_item.json().get('id')
                 }
             ),
             format='json'
