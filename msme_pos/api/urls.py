@@ -10,7 +10,8 @@ from api.views import (
     MenuItemListAPIView,
     MenuItemCreateAPIView,
     MenuItemDetailAPIView,
-    ItemOrderCreateAPIView
+    ItemOrderCreateAPIView,
+    ItemOrderDetailAPIView
 )
 
 router = DefaultRouter()
@@ -23,13 +24,22 @@ router.register('login', LoginViewSet, base_name='login')
 
 urlpatterns = [
     url(r'', include(router.urls)),
+
+    # Routes for UserProfile 
     url(r'profiles/$', UserProfileListAPIView.as_view(), name='profiles_list'),
     url(r'profiles/create/$', UserProfileCreateAPIView.as_view(), name='profiles_create'),
     url(r'profiles/(?P<full_business_name>[\w\-]+)/$', UserProfileDetailAPIView.as_view(), name='profiles_detail'),
-    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_pk>\d+)/$', MenuItemDetailAPIView.as_view(), name='menu_items_detail'),
+    
+    # Routes for MenuItem 
     url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/create/$', MenuItemCreateAPIView.as_view(), name='menu_items_create'),
+    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_name>[\w\-]+)/$', MenuItemDetailAPIView.as_view(), name='menu_items_detail'),
+
+    # Routes for ItemOrder 
+    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_name>[\w\-]+)/order/(?P<item_order_pk>[\w\-]+)/$', ItemOrderDetailAPIView.as_view(), name='item_order_detail'),
+    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_name>[\w\-]+)/order/$', ItemOrderCreateAPIView.as_view(), name='item_order_create'),
+    
+    # Route for al 
     url(r'menu_items/$', MenuItemListAPIView.as_view(), name='menu_items_list'),
-    url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<item_order_pk>\d+)/order/$', ItemOrderCreateAPIView.as_view(), name='item_order_create'),
     # url(r'menu_items/(?P<menu_item_pk>\d+)/$', MenuItemDetailAPIView.as_view(), name='menu_items_detail'),
     # url(r'menu_items/(?P<menu_item_pk>\d+)/item_order/create/$', ItemOrderCreateAPIView.as_view(), name='item_order_create'),
 ]

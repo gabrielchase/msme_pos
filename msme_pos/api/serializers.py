@@ -12,8 +12,11 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     class Meta: 
         model = MenuItem
-        fields = ('id', 'name', 'description', 'price', 'added_on', 'user_profile')
-        extra_kwargs = {'user_profile': {'read_only': True}}
+        fields = ('id', 'name', 'url_param_name', 'description', 'price', 'added_on', 'user_profile')
+        extra_kwargs = {
+            'url_param_name': {'read_only': True},
+            'user_profile': {'read_only': True}
+        }
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -74,7 +77,7 @@ class ItemOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ItemOrder
-        fields = ['quantity', 'menu_item', 'ordered_on', 'additional_notes']
+        fields = ('id', 'quantity', 'menu_item', 'ordered_on', 'additional_notes')
         extra_kwargs = {
             'menu_item': {'read_only': True},
         }
