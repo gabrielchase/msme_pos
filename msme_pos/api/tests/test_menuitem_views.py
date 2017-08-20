@@ -7,11 +7,8 @@ from rest_framework.test import APIClient
 
 from api.models import (
     UserProfile,
-    UserProfileManager,
     MenuItem
 )
-
-manager = UserProfileManager()
 
 
 class MenuItemViewSetTestCase(TestCase):
