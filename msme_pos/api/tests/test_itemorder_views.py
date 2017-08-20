@@ -138,6 +138,152 @@ class ItemOrderViewSetTestCase(TestCase):
             format='json'
         ).json()
 
+        self.user_1_menu_item_1_order_1_data = {
+            'quantity': 1,
+            'additional_notes': '111',
+            'menu_item': self.user_1_menu_item_1
+        }
+
+        self.user_1_menu_item_1_order_2_data = {
+            'quantity': 1,
+            'additional_notes': '112',
+            'menu_item': self.user_1_menu_item_1
+        }
+
+        self.user_1_menu_item_2_order_1_data = {
+            'quantity': 1,
+            'additional_notes': '121',
+            'menu_item': self.user_1_menu_item_2
+        }
+
+        self.user_1_menu_item_2_order_2_data = {
+            'quantity': 1,
+            'additional_notes': '122',
+            'menu_item': self.user_1_menu_item_2
+        }
+
+        self.user_2_menu_item_1_order_1_data = {
+            'quantity': 1,
+            'additional_notes': '211',
+            'menu_item': self.user_2_menu_item_1
+        }
+
+        self.user_2_menu_item_1_order_2_data = {
+            'quantity': 1,
+            'additional_notes': '212',
+            'menu_item': self.user_2_menu_item_1
+        }
+
+        self.user_2_menu_item_2_order_1_data = {
+            'quantity': 1,
+            'additional_notes': '221',
+            'menu_item': self.user_2_menu_item_2
+        }
+
+        self.user_2_menu_item_2_order_2_data = {
+            'quantity': 1,
+            'additional_notes': '222',
+            'menu_item': self.user_2_menu_item_2
+        }
+
+        self.user_1_menu_item_1_order_1 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name')
+                }
+            ),
+            self.user_1_menu_item_1_order_1_data,
+            format='json'
+        ).json()
+
+        self.user_1_menu_item_1_order_2 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name')
+                }
+            ),
+            self.user_1_menu_item_1_order_2_data,
+            format='json'
+        ).json()
+
+        self.user_1_menu_item_2_order_1 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name')
+                }
+            ),
+            self.user_1_menu_item_2_order_1_data,
+            format='json'
+        ).json()
+
+        self.user_1_menu_item_2_order_2 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name')
+                }
+            ),
+            self.user_1_menu_item_2_order_2_data,
+            format='json'
+        ).json()
+
+        # ---------------------------
+
+        self.user_2_menu_item_1_order_1 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name')
+                }
+            ),
+            self.user_2_menu_item_1_order_1_data,
+            format='json'
+        ).json()
+
+        self.user_2_menu_item_1_order_2 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name')
+                }
+            ),
+            self.user_2_menu_item_1_order_2_data,
+            format='json'
+        ).json()
+
+        self.user_2_menu_item_2_order_1 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_2.get('url_param_name')
+                }
+            ),
+            self.user_2_menu_item_2_order_1_data,
+            format='json'
+        ).json()
+
+        self.user_2_menu_item_2_order_2 = self.authorized_client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_2.get('url_param_name')
+                }
+            ),
+            self.user_2_menu_item_2_order_2_data,
+            format='json'
+        ).json()
+
     def test_setup_successful(self):
         self.assertTrue(self.user_1.get('id'))
         self.assertTrue(self.user_2.get('id'))
@@ -147,6 +293,16 @@ class ItemOrderViewSetTestCase(TestCase):
         self.assertTrue(self.user_1_menu_item_2.get('id'))
         self.assertTrue(self.user_2_menu_item_1.get('id'))
         self.assertTrue(self.user_2_menu_item_2.get('id'))
-
-
+        self.assertEqual(self.user_1_menu_item_1.get('user_profile'), self.user_1.get('id'))
+        self.assertEqual(self.user_1_menu_item_2.get('user_profile'), self.user_1.get('id'))
+        self.assertEqual(self.user_2_menu_item_1.get('user_profile'), self.user_2.get('id'))
+        self.assertEqual(self.user_2_menu_item_2.get('user_profile'), self.user_2.get('id'))
+        self.assertTrue(self.user_1_menu_item_1_order_1)
+        self.assertTrue(self.user_1_menu_item_1_order_2)
+        self.assertTrue(self.user_1_menu_item_2_order_1)
+        self.assertTrue(self.user_1_menu_item_2_order_2)
+        self.assertTrue(self.user_2_menu_item_1_order_1)
+        self.assertTrue(self.user_2_menu_item_1_order_2)
+        self.assertTrue(self.user_2_menu_item_2_order_1)
+        self.assertTrue(self.user_2_menu_item_2_order_2)
 
