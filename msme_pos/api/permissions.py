@@ -31,6 +31,4 @@ class GetAndUpdateOwnOrderItem(permissions.BasePermission):
     """ Allow user to update or delete their own menu item orders"""
 
     def has_object_permission(self, request, view, order):
-        print(order)
-        print(order.menu_item)
         return order.menu_item.user_profile == request.user or request.user.is_superuser
