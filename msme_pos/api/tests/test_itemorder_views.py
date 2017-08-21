@@ -234,8 +234,6 @@ class ItemOrderViewSetTestCase(TestCase):
             format='json'
         ).json()
 
-        # ---------------------------
-
         self.user_2_menu_item_1_order_1 = self.authorized_client.post(
             reverse(
                 'api:item_order_create',
@@ -285,18 +283,27 @@ class ItemOrderViewSetTestCase(TestCase):
         ).json()
 
     def test_setup_successful(self):
+        """ Test that the users have  been created"""
         self.assertTrue(self.user_1.get('id'))
         self.assertTrue(self.user_2.get('id'))
+
+        """ Test that both the users can login """
         self.assertEqual(self.user_1_login_response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.user_2_login_response.status_code, status.HTTP_200_OK)
+
+        """ Test that all menu items are created """
         self.assertTrue(self.user_1_menu_item_1.get('id'))
         self.assertTrue(self.user_1_menu_item_2.get('id'))
         self.assertTrue(self.user_2_menu_item_1.get('id'))
         self.assertTrue(self.user_2_menu_item_2.get('id'))
+
+        """ Test that each menu item was created by their respective user"""
         self.assertEqual(self.user_1_menu_item_1.get('user_profile'), self.user_1.get('id'))
         self.assertEqual(self.user_1_menu_item_2.get('user_profile'), self.user_1.get('id'))
         self.assertEqual(self.user_2_menu_item_1.get('user_profile'), self.user_2.get('id'))
         self.assertEqual(self.user_2_menu_item_2.get('user_profile'), self.user_2.get('id'))
+
+        """ Test that all item orders have been created """
         self.assertTrue(self.user_1_menu_item_1_order_1)
         self.assertTrue(self.user_1_menu_item_1_order_2)
         self.assertTrue(self.user_1_menu_item_2_order_1)
@@ -306,3 +313,4 @@ class ItemOrderViewSetTestCase(TestCase):
         self.assertTrue(self.user_2_menu_item_2_order_1)
         self.assertTrue(self.user_2_menu_item_2_order_2)
 
+        

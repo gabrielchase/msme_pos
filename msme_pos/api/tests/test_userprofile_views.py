@@ -63,8 +63,6 @@ class UserProfileViewSetTestCase(TestCase):
             password='password'
         )
 
-        # print(self.superuser.is_superuser)
-
         self.superuser_login_data = {
             'username': self.superuser.email,
             'password': 'password'
@@ -76,20 +74,15 @@ class UserProfileViewSetTestCase(TestCase):
             format='json'
         )
 
-        # print(self.superuser_api_login_response.json().get('token'))
-
         self.superuser_client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.superuser_api_login_response.json().get('token')
         )
 
         self.unauthenticated_client = APIClient()
 
-        # print(self.superuser_client)
-
-        # print(self.superuser_api_login_response.json())
-
-
     def test_api_can_create_user(self):
+        """ New users can be created and are not superuser or staff """
+
         new_count = UserProfile.objects.count()
 
         self.assertNotEqual(self.old_count, new_count)
@@ -98,6 +91,8 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertFalse(self.api_response.json().get('is_staff'))
 
     def test_api_can_get_user_list(self):
+        """ Test that only superusers can get a list of all users """
+
         unauthenticated_client = APIClient()
 
         authenticated_api_response = self.client.get(
@@ -115,13 +110,13 @@ class UserProfileViewSetTestCase(TestCase):
             format='json'
         )
 
-        # print(superuser_api_response.status_code, superuser_api_response.json())
-
         self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(authenticated_api_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(superuser_api_response.status_code, status.HTTP_200_OK)
 
     def test_api_can_get_user(self):
+        """ Test that anly a user or superuser can get their own profile """
+
         api_response = self.client.get(
             reverse(
                 'api:profiles_detail', 
@@ -163,6 +158,8 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(superuser_api_response.status_code, status.HTTP_200_OK)
 
     def test_api_can_update_user(self):
+        """ Test that a user can update their attributes """
+
         user_to_be_updated = UserProfile.objects.get(email=self.created_user.get('email'))
 
         new_user_data = {
@@ -202,6 +199,8 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(updated_user.get('state'), new_user_data.get('state'))
 
     def test_api_can_delete_user(self):
+        """ Test that a user account can be deleted """
+
         user_to_be_deleted = UserProfile.objects.get(email=self.created_user.get('email'))
 
         api_response = self.client.delete(
@@ -215,6 +214,8 @@ class UserProfileViewSetTestCase(TestCase):
         self.assertEqual(api_response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_api_cannot_update_without_token(self):
+        """ Test that another user can't update another users attributes """
+
         no_token_client = APIClient()
         user_to_be_updated = UserProfile.objects.get(email=self.created_user.get('email'))
 

@@ -88,6 +88,9 @@ class MenuItemViewSetTestCase(TestCase):
         self.superuser_client.credentials(HTTP_AUTHORIZATION='Token ' + self.superuser_login_token)
 
     def test_api_creates_menu_item_with_logged_in_user(self):
+        """ Tests if the  user profile in the created menu item is the 
+        same as the user that created the menu item """
+
         created_menu_item_response = self.client.post(
             reverse(
                 'api:menu_items_create',
@@ -102,6 +105,8 @@ class MenuItemViewSetTestCase(TestCase):
         self.assertTrue(created_menu_item_response.json().get('user_profile'), self.user_data)
 
     def test_api_cant_create_or_get_menu_items_without_logged_in_user(self):
+        """ Tests that only logged in users can create, get, update, and delete  menu items """
+
         no_login_client = APIClient()
 
         created_menu_item = self.client.post(
@@ -169,7 +174,9 @@ class MenuItemViewSetTestCase(TestCase):
         self.assertEqual(updated_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(delete_menu_item_response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_cant_edit_or_delete_menu_item_as_other_user(self):
+    def test_cant_get_edit_or_delete_menu_item_as_other_user(self):
+        """ Tests that another user cannot get, edit, or delete another user's menu item """
+
         created_menu_item = self.client.post(
             reverse(
                 'api:menu_items_create',
@@ -178,12 +185,6 @@ class MenuItemViewSetTestCase(TestCase):
             self.menu_item_data,
             format='json'
         )
-
-        print(self.created_user.get('full_business_name'))
-        print(reverse(
-                'api:menu_items_create',
-                kwargs={'full_business_name': self.created_user.get('full_business_name')}
-            ))
 
         other_client = APIClient()
 
@@ -220,11 +221,6 @@ class MenuItemViewSetTestCase(TestCase):
         
         other_client.credentials(HTTP_AUTHORIZATION='Token ' + login_token)
 
-        print('-----')
-        print(created_menu_item.json())
-        print(created_menu_item.json().get('url_param_name'))
-        print('-----')
-
         get_menu_item_response = other_client.get(
             reverse(
                 'api:menu_items_detail',
@@ -240,8 +236,6 @@ class MenuItemViewSetTestCase(TestCase):
             'name': 'other',
             'price': 69
         }
-
-        print(created_menu_item.json().get('url_param_name'))
 
         update_menu_item_response = other_client.put(
             reverse(
@@ -272,6 +266,8 @@ class MenuItemViewSetTestCase(TestCase):
         self.assertEqual(delete_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
 
     def only_admin_can_get_all_menu_items(self):
+        """ Only an admin/superuser can get all the menu items of another user"""
+
         authenticated_user_api_response = self.client.get(
             reverse('api:menu_items_list'),
             format='json'
