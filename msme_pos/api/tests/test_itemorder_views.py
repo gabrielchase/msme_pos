@@ -313,4 +313,260 @@ class ItemOrderViewSetTestCase(TestCase):
         self.assertTrue(self.user_2_menu_item_2_order_1)
         self.assertTrue(self.user_2_menu_item_2_order_2)
 
+    def test_other_user_and_unauthenticated_user_cannot_get_user_menu_item_order(self):
+        """ Test that another user cannot get another user's orders """ 
+
+        user_1_get_user_2_menu_item_1_item_order_1 = self.authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_1_get_user_2_menu_item_1_item_order_2 = self.authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_1_get_user_2_menu_item_2_item_order_1 = self.authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_2_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
         
+        user_1_get_user_2_menu_item_2_item_order_2 = self.authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_2_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_2_get_user_1_menu_item_1_item_order_1 = self.other_authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_2_get_user_1_menu_item_1_item_order_2 = self.other_authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_2_get_user_1_menu_item_2_item_order_1 = self.other_authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_2_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_2_get_user_1_menu_item_2_item_order_2 = self.other_authorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_2_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        unauthorized_client_get_user_1_menu_item_2_item_order_2 = self.unauthorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_2_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        unauthorized_client_get_user_2_menu_item_2_item_order_2 = self.unauthorized_client.get(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_2_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        self.assertEqual(user_1_get_user_2_menu_item_1_item_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_1_get_user_2_menu_item_1_item_order_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_1_get_user_2_menu_item_2_item_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_1_get_user_2_menu_item_2_item_order_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_2_get_user_1_menu_item_1_item_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_2_get_user_1_menu_item_1_item_order_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_2_get_user_1_menu_item_2_item_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_2_get_user_1_menu_item_2_item_order_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(unauthorized_client_get_user_1_menu_item_2_item_order_2.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(unauthorized_client_get_user_2_menu_item_2_item_order_2.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_user_and_unauthenticated_user_cannot_delete_user_menu_item_order(self):
+        """ Test that only user that created item order can put item order """
+
+        put_data = {
+            'quantity': 69,
+            'additional_notes': '6969'
+        }
+
+        user_1_put_item_1_order_1 = self.authorized_client.put(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_1.get('id')
+                }
+            ),
+            put_data,
+            format='json'
+        )
+
+        user_2_put_user_1_item_1_order_1 = self.other_authorized_client.put(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_1.get('id')
+                }
+            ),
+            put_data,
+            format='json'
+        )
+
+        user_1_put_user_2_item_1_order_1 = self.authorized_client.put(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_1.get('id')
+                }
+            ),
+            put_data,
+            format='json'
+        )
+
+        unauthorized_client_put_user_2_item_1_order_1 = self.unauthorized_client.put(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_1.get('id')
+                }
+            ),
+            put_data,
+            format='json'
+        )
+
+        self.assertEqual(user_1_put_item_1_order_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(user_1_put_item_1_order_1.json().get('id'), self.user_1_menu_item_1_order_1.get('id'))
+        self.assertEqual(user_1_put_item_1_order_1.json().get('quantity'), put_data.get('quantity'))
+        self.assertEqual(user_1_put_item_1_order_1.json().get('additional_notes'), put_data.get('additional_notes'))
+        self.assertEqual(user_2_put_user_1_item_1_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_1_put_user_2_item_1_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(unauthorized_client_put_user_2_item_1_order_1.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_user_and_unauthenticated_user_cannot_delete_user_menu_item_order(self):
+        """ Test that only user that created item order can delete item order """
+        
+        user_1_delete_item_1_order_1 = self.authorized_client.delete(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_2_delete_user_1_item_1_order_2 = self.other_authorized_client.delete(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_1.get('full_business_name'),
+                    'menu_item_name': self.user_1_menu_item_2.get('url_param_name'),
+                    'item_order_pk': self.user_1_menu_item_1_order_2.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        user_1_delete_user_2_item_1_order_1 = self.authorized_client.delete(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        unauthorized_client_delete_user_2_item_1_order_1 = self.unauthorized_client.delete(
+            reverse(
+                'api:item_order_detail',
+                kwargs={
+                    'full_business_name': self.user_2.get('full_business_name'),
+                    'menu_item_name': self.user_2_menu_item_1.get('url_param_name'),
+                    'item_order_pk': self.user_2_menu_item_1_order_1.get('id')
+                }
+            ),
+            format='json'
+        )
+
+        self.assertEqual(user_1_delete_item_1_order_1.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(user_2_delete_user_1_item_1_order_2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(user_1_delete_user_2_item_1_order_1.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(unauthorized_client_delete_user_2_item_1_order_1.status_code, status.HTTP_401_UNAUTHORIZED)
