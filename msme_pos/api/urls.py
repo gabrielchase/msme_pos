@@ -37,4 +37,6 @@ urlpatterns = [
     # Routes for ItemOrder 
     url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_name>[\w\-]+)/order/$', ItemOrderCreateAPIView.as_view(), name='item_order_create'),
     url(r'profiles/(?P<full_business_name>[\w\-]+)/menu_item/(?P<menu_item_name>[\w\-]+)/order/(?P<item_order_pk>[\w\-]+)/$', ItemOrderDetailAPIView.as_view(), name='item_order_detail'),
+
+    # url(r'menu_items/$', MenuItemListAPIView.as_view(), name='menu_items_list'),
 ]

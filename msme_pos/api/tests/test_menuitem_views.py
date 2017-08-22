@@ -265,27 +265,123 @@ class MenuItemViewSetTestCase(TestCase):
         self.assertEqual(update_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(delete_menu_item_response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def only_admin_can_get_all_menu_items(self):
-        """ Only an admin/superuser can get all the menu items of another user"""
+    # def test_only_admin_can_get_all_menu_items(self):
+    #     """ Only an admin/superuser can get all the menu items of another user"""
 
-        authenticated_user_api_response = self.client.get(
-            reverse('api:menu_items_list'),
+    #     authenticated_user_api_response = self.client.get(
+    #         reverse('api:menu_items_list'),
+    #         format='json'
+    #     )
+
+    #     unauthenticated_client = APIClient()
+
+    #     unauthenticated_client_response = unauthenticated_client.get(
+    #         reverse('api:menu_items_list'),
+    #         format='json'
+    #     ).json()
+
+    #     superuser_get_menu_list_response = self.superuser_client.get(
+    #         reverse('api:menu_item_list'),
+    #         format='json'
+    #     ).json()
+
+    #     self.assertEqual(authenticated_user_api_response.status_code, status.HTTP_403_FORBIDDEN)
+    #     self.assertEqual(unauthenticated_client_response.status_code, status.HTTP_403_FORBIDDEN)
+    #     self.assertEqual(superuser_get_menu_list_response.status_code, status.HTTP_200_OK)
+
+    def test_menu_item_gets_all_orders(self):
+        """ Test that the menu item displays all the item orders and that each item order
+        has the corresponding id """ 
+
+        menu_item_1_data = {
+            'name': 'user 1 menu item 1',
+            'description': 'menu item description 1',
+            'price': 80
+        }
+
+        menu_item_1 = self.client.post(
+            reverse(
+                'api:menu_items_create',
+                kwargs={'full_business_name': self.created_user.get('full_business_name')}
+            ),
+            menu_item_1_data,
             format='json'
         )
 
-        unauthenticated_client = APIClient()
+        self.assertEqual(menu_item_1.status_code, status.HTTP_200_OK)
+        self.assertTrue(menu_item_1.json().get('id'))
+        
+        menu_item_1_order_1_data = {
+            'quantity': 1,
+            'additional_notes': '111',
+            'menu_item': menu_item_1.json()
+        }
 
-        unauthenticated_client_response = unauthenticated_client.get(
-            reverse('api:menu_items_list'),
+        menu_item_1_order_2_data = {
+            'quantity': 1,
+            'additional_notes': '112',
+            'menu_item': menu_item_1.json()
+        }
+
+        menu_item_1_order_1 = self.client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'menu_item_name': menu_item_1.json().get('url_param_name')
+                }
+            ),
+            menu_item_1_order_1_data,
             format='json'
-        ).json()
+        )
 
-        superuser_get_menu_list_response = self.superuser_client.get(
-            reverse('api:menu_item_list'),
+        menu_item_1_order_2 = self.client.post(
+            reverse(
+                'api:item_order_create',
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'menu_item_name': menu_item_1.json().get('url_param_name')
+                }
+            ),
+            menu_item_1_order_2_data,
             format='json'
-        ).json()
+        )
 
-        self.assertEqual(authenticated_user_api_response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(unauthenticated_client_response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(superuser_get_menu_list_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(menu_item_1_order_1.json().get('id'))
+        self.assertTrue(menu_item_1_order_2.json().get('id'))
+        self.assertEqual(menu_item_1_order_1.status_code, status.HTTP_200_OK)
+        self.assertEqual(menu_item_1_order_2.status_code, status.HTTP_200_OK)
+        
+        get_menu_item_1 = self.client.get(
+            reverse(
+                'api:menu_items_detail',
+                kwargs={
+                    'full_business_name': self.created_user.get('full_business_name'),
+                    'menu_item_name': menu_item_1.json().get('url_param_name')
+                }
+            ),
+            format='json'
+        )
+
+        self.assertEqual(get_menu_item_1.status_code, status.HTTP_200_OK)
+        self.assertTrue(get_menu_item_1.json().get('id'))
+        self.assertEqual(get_menu_item_1.json().get('name'), menu_item_1.json().get('name'))
+        self.assertEqual(get_menu_item_1.json().get('description'), menu_item_1.json().get('description'))
+        self.assertEqual(get_menu_item_1.json().get('price'), menu_item_1.json().get('price'))
+        self.assertTrue(get_menu_item_1.json().get('item_orders'))
+        self.assertTrue(len(get_menu_item_1.json().get('item_orders')), 2)
+
+        get_menu_item_orders = get_menu_item_1.json().get('item_orders')
+
+        self.assertEqual(menu_item_1_order_1.json().get('id'), get_menu_item_orders[0].get('id'))
+        self.assertEqual(menu_item_1_order_2.json().get('id'), get_menu_item_orders[1].get('id'))
+
+        self.assertEqual(get_menu_item_orders[0].get('quantity'), menu_item_1_order_1_data.get('quantity'))
+        self.assertEqual(get_menu_item_orders[0].get('additional_notes'), menu_item_1_order_1_data.get('additional_notes'))
+        self.assertEqual(get_menu_item_orders[0].get('menu_item'), menu_item_1.json().get('id'))
+
+        self.assertEqual(get_menu_item_orders[1].get('quantity'), menu_item_1_order_2_data.get('quantity'))
+        self.assertEqual(get_menu_item_orders[1].get('additional_notes'), menu_item_1_order_2_data.get('additional_notes'))
+        self.assertEqual(get_menu_item_orders[1].get('menu_item'), menu_item_1.json().get('id'))
+
 
