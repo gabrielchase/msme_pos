@@ -7,12 +7,25 @@ from api.models import (
 )
 
 
+class ItemOrderSerializer(serializers.ModelSerializer):
+    """ Serializer for an User's Menu Item order """
+
+    class Meta:
+        model = ItemOrder
+        fields = ('id', 'quantity', 'menu_item', 'ordered_on', 'additional_notes')
+        extra_kwargs = {
+            'menu_item': {'read_only': True},
+        }
+
+
 class MenuItemSerializer(serializers.ModelSerializer):
     """ Serializer for user's menu item """
 
+    item_orders = ItemOrderSerializer(many=True, read_only=True)
+
     class Meta: 
         model = MenuItem
-        fields = ('id', 'name', 'url_param_name', 'description', 'price', 'added_on', 'user_profile')
+        fields = ('id', 'name', 'url_param_name', 'description', 'price', 'added_on', 'user_profile', 'item_orders')
         extra_kwargs = {
             'url_param_name': {'read_only': True},
             'user_profile': {'read_only': True}
@@ -70,14 +83,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
-
-
-class ItemOrderSerializer(serializers.ModelSerializer):
-    """ Serializer for an User's Menu Item order """
-
-    class Meta:
-        model = ItemOrder
-        fields = ('id', 'quantity', 'menu_item', 'ordered_on', 'additional_notes')
-        extra_kwargs = {
-            'menu_item': {'read_only': True},
-        }
