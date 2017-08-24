@@ -373,15 +373,16 @@ class MenuItemViewSetTestCase(TestCase):
 
         get_menu_item_orders = get_menu_item_1.json().get('item_orders')
 
-        self.assertEqual(menu_item_1_order_1.json().get('id'), get_menu_item_orders[0].get('id'))
-        self.assertEqual(menu_item_1_order_2.json().get('id'), get_menu_item_orders[1].get('id'))
+        self.assertEqual(menu_item_1_order_2.json().get('id'), get_menu_item_orders[0].get('id'))
+        self.assertEqual(menu_item_1_order_1.json().get('id'), get_menu_item_orders[1].get('id'))
 
-        self.assertEqual(get_menu_item_orders[0].get('quantity'), menu_item_1_order_1_data.get('quantity'))
-        self.assertEqual(get_menu_item_orders[0].get('additional_notes'), menu_item_1_order_1_data.get('additional_notes'))
+        self.assertEqual(get_menu_item_orders[0].get('quantity'), menu_item_1_order_2_data.get('quantity'))
+        self.assertEqual(get_menu_item_orders[0].get('additional_notes'), menu_item_1_order_2_data.get('additional_notes'))
         self.assertEqual(get_menu_item_orders[0].get('menu_item'), menu_item_1.json().get('id'))
-
-        self.assertEqual(get_menu_item_orders[1].get('quantity'), menu_item_1_order_2_data.get('quantity'))
-        self.assertEqual(get_menu_item_orders[1].get('additional_notes'), menu_item_1_order_2_data.get('additional_notes'))
+        
+        self.assertEqual(get_menu_item_orders[1].get('quantity'), menu_item_1_order_1_data.get('quantity'))
+        self.assertEqual(get_menu_item_orders[1].get('additional_notes'), menu_item_1_order_1_data.get('additional_notes'))
         self.assertEqual(get_menu_item_orders[1].get('menu_item'), menu_item_1.json().get('id'))
+
 
 
