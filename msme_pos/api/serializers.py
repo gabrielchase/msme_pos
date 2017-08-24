@@ -1,4 +1,7 @@
-from rest_framework import serializers
+from rest_framework import (
+    serializers,
+    pagination
+)
 
 from api.models import (
     UserProfile,
@@ -21,7 +24,7 @@ class ItemOrderSerializer(serializers.ModelSerializer):
 class MenuItemSerializer(serializers.ModelSerializer):
     """ Serializer for user's menu item """
 
-    item_orders = ItemOrderSerializer(many=True, read_only=True)
+    item_orders = serializers.SerializerMethodField('paginated_item_orders')
 
     class Meta: 
         model = MenuItem
@@ -30,6 +33,14 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'url_param_name': {'read_only': True},
             'user_profile': {'read_only': True}
         }
+
+    def paginated_item_orders(self, menu_item):
+        item_orders = ItemOrder.objects.filter(menu_item=menu_item).order_by('-ordered_on')
+        paginator = pagination.PageNumberPagination()
+        page = paginator.paginate_queryset(item_orders, self.context['request'])
+        serializer = ItemOrderSerializer(page, many=True, context={'request': self.context['request']})
+        
+        return serializer.data
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
