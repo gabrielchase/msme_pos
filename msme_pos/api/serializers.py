@@ -9,6 +9,9 @@ from api.models import (
     ItemOrder
 )
 
+import datetime
+import pytz
+
 
 class ItemOrderSerializer(serializers.ModelSerializer):
     """ Serializer for an User's Menu Item order """
@@ -35,12 +38,28 @@ class MenuItemSerializer(serializers.ModelSerializer):
         }
 
     def paginated_item_orders(self, menu_item):
+        request = self.context.get('request')
         item_orders = ItemOrder.objects.filter(menu_item=menu_item).order_by('-ordered_on')
-        paginator = pagination.PageNumberPagination()
-        page = paginator.paginate_queryset(item_orders, self.context['request'])
-        serializer = ItemOrderSerializer(page, many=True, context={'request': self.context['request']})
         
-        return serializer.data
+        if request:     
+            """ In Get ItemOrderDetail view """
+
+            date_query = request.query_params.get('date')
+
+            if date_query:
+                datetime_date_query = pytz.utc.localize(datetime.datetime.strptime(date_query, '%Y-%m-%d'))
+                item_orders = item_orders.filter(ordered_on__date=datetime_date_query)
+            
+            paginator = pagination.PageNumberPagination()
+            page = paginator.paginate_queryset(item_orders, self.context['request'])
+            serializer = ItemOrderSerializer(page, many=True, context={'request': self.context['request']})
+            
+            return serializer.data
+        else: 
+            """ In Create ItemOrderDetail view so just return 
+            number of orders """
+
+            return len(item_orders)
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
