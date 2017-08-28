@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 
-    'api'
+    'user_profile',
+    'menu_item',
+    'item_order'
 ]
 
 REST_FRAMEWORK = {
@@ -132,4 +134,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-AUTH_USER_MODEL = 'api.UserProfile'
+AUTH_USER_MODEL = 'user_profile.UserProfile'

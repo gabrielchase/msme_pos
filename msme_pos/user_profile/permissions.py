@@ -16,11 +16,19 @@ class GetAndUpdateOwnMenuItem(permissions.BasePermission):
     def has_object_permission(self, request, view, menu_item):
         return menu_item.user_profile == request.user or request.user.is_superuser
 
+class GetOwnOrders(permissions.BasePermission):
+    """ Only UserProfile can get own orders  """
+
+    def has_object_permission(self, request, view, obj):
+        print('in GetOwnOrders')
+        # print(obj)
+        return 
+
+
 class CreateOrderItem(permissions.BasePermission):
     """ Allow user to create an order of theor own menu item """
 
-    def has_object_permission(self, request, view, instance):
-        
+    def has_object_permission(self, request, view, instance):        
         if instance.__class__.__name__ == 'MenuItem':
             return instance.user_profile == request.user
         elif instance.__class__.__name__ == 'ItemOrder':

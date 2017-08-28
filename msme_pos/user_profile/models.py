@@ -105,35 +105,3 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """ business_name-identifier """ 
 
         return self.get_full_name()
-
-
-class MenuItem(models.Model):
-    """ User's menu items """
-
-    name = models.CharField(max_length=255, blank=False, unique=True)
-    url_param_name = models.CharField(max_length=255, unique=True)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    added_on = models.DateTimeField(auto_now_add=True)
-    user_profile = models.ForeignKey('UserProfile', related_name='menu_items', on_delete=models.CASCADE)
-
-    def save(self, *args, **kwargs):
-        self.url_param_name = self.name.replace(' ', '-').lower()
-        super(MenuItem, self).save(*args, **kwargs)
-
-    def __str__(self):
-        
-        return self.name
-
-
-class ItemOrder(models.Model):
-    """ ItemOrder model """
-
-    quantity = models.IntegerField()
-    ordered_on = models.DateTimeField(auto_now_add=True)
-    additional_notes = models.TextField(null=True)
-    menu_item = models.ForeignKey('MenuItem', related_name='item_orders', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.quantity) + ' orders of ' + self.menu_item.name + ' from ' + self.menu_item.user_profile.business_name
-
